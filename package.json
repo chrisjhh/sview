@@ -4,7 +4,7 @@
   "description": "Strava View",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --compilers js:babel-core/register"
   },
   "repository": {
     "type": "git",
@@ -20,7 +20,12 @@
     "url": "https://github.com/chrisjhh/sview/issues"
   },
   "homepage": "https://github.com/chrisjhh/sview#readme",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
     "chai": "^4.1.2",
     "mocha": "^5.2.0"
   }
