@@ -1,0 +1,4 @@
+Inital stage:
+  ☐ Write a module to access Strava data
+  ☐ Write unit tests
+  ☐ Use react and redux to display a list of strava activities

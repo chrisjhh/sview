@@ -1,0 +1,23 @@
+{
+  "name": "sview",
+  "version": "0.1.0",
+  "description": "Strava View",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chrisjhh/sview.git"
+  },
+  "keywords": [
+    "strava",
+    "view"
+  ],
+  "author": "Chris Hamer-Hodges",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chrisjhh/sview/issues"
+  },
+  "homepage": "https://github.com/chrisjhh/sview#readme"
+}
