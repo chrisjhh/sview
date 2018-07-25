@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/chrisjhh/sview/issues"
   },
-  "homepage": "https://github.com/chrisjhh/sview#readme"
+  "homepage": "https://github.com/chrisjhh/sview#readme",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0"
+  }
 }
