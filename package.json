@@ -20,7 +20,9 @@
     "url": "https://github.com/chrisjhh/sview/issues"
   },
   "homepage": "https://github.com/chrisjhh/sview#readme",
-  "dependencies": {},
+  "dependencies": {
+    "http": "0.0.0"
+  },
   "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
