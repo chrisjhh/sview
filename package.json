@@ -4,7 +4,7 @@
   "description": "Strava View",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register"
+    "test": "mocha --require babel-core/register"
   },
   "repository": {
     "type": "git",
