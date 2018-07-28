@@ -5,12 +5,14 @@ import { getAthlete } from '../lib/strava';
 
 describe('getAthlete', function() {
   it('should load', function(done) {
+    this.timeout(5000);
     this.slow(800);
     getAthlete()
       .then(() => done())
       .catch(done);
   });
   it('should contain expected data', async function() {
+    this.timeout(5000);
     this.slow(800);
     const data = await getAthlete();
     expect(data).to.have.property('id');
