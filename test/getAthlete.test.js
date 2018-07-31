@@ -3,6 +3,10 @@ const expect = chai.expect;
 
 import { getAthlete } from '../lib/cached_strava';
 
+const sinon = require('sinon');
+const https = require('https');
+sinon.spy(https, 'request');
+
 describe('getAthlete', function() {
   it('should load', function(done) {
     this.timeout(5000);
@@ -19,5 +23,15 @@ describe('getAthlete', function() {
     expect(data).to.have.property('username');
     expect(data).to.have.property('firstname');
     expect(data).to.have.property('lastname');
+  });
+});
+
+describe('caching', function() {
+  it('should only make https request once', function() {
+    expect(https.request.callCount).to.equal(1);
+  });
+
+  after(function() {
+    https.request.restore();
   });
 });

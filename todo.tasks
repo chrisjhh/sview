@@ -5,6 +5,6 @@ Inital stage:
 Caching:
   ✔ Write and test an in memory cache @done (2018-7-31 14:43:18)
   ✔ Test items expire using asyncronous test @done (2018-7-31 14:55:49)
-  ☐ Use sinon to test call to strava only happens once
+  ✔ Use sinon to test call to strava only happens once @done (2018-7-31 15:35:10)
   ☐ Write and test a fs cache
   ☐ Use a fs cache for test that writes to cache dir within project
