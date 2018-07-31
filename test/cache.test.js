@@ -54,4 +54,21 @@ describe('In Memory Cache', function() {
     });
   });
 
+  it('should expire old entries', function(done) {
+    this.slow(160);
+    let cache = new InMemoryCache();
+    let value = {x: 3, y: 5};
+    cache.store('test',value,0.1);
+    setTimeout(() => {
+      let retrieved = cache.retrieve('test');
+      expect(retrieved).to.deep.equal(value);
+    }, 50);
+    setTimeout(() => {
+      let retrieved = cache.retrieve('test');
+      expect(retrieved).to.be.undefined;
+      done();
+    }, 150);
+    
+  });
+
 });
