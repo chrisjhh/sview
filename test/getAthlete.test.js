@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { getAthlete } from '../lib/strava';
+import { getAthlete } from '../lib/cached_strava';
 
 describe('getAthlete', function() {
   it('should load', function(done) {
