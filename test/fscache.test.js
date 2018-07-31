@@ -5,11 +5,10 @@ const os = require('os');
 const path = require('path');
 const fs = require('fs');
 const testDir = path.join(os.tmpdir(), 'fscache.test');
-console.log('testDir:', testDir);
 
 import { FSCache } from '../lib/fscache';
 
-describe.only('File System Cache', function() {
+describe('File System Cache', function() {
 
   it('should store and retrieve', function(done) {
     let cache = new FSCache(testDir);
@@ -65,7 +64,7 @@ describe.only('File System Cache', function() {
 
 });
 
-describe.only('After File System Cache', function() {
+describe('After File System Cache', function() {
   it('Should be persistent', function(done) {
     let cache = new FSCache(testDir);
     let value = {x: 3, y: 5};
@@ -78,6 +77,14 @@ describe.only('After File System Cache', function() {
   it('Should clean up expired items', function() {
     let cache = new FSCache(testDir);
     let file = cache.keyToFile('test3');
-    expect(fs.accessSync(file)).to.not.throw();
+    let exists = () => fs.accessSync(file);
+    expect(exists).to.throw();
+  });
+  after(function() {
+    // Remove the file test1
+    const file = path.join(testDir, 'test1');
+    fs.unlinkSync(file);
+    // Remove test directory
+    fs.rmdirSync(testDir);
   });
 });
