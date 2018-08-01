@@ -30,6 +30,16 @@ describe('getActivities', function() {
   });
 });
 
+it('before and after should work', async function() {
+  this.timeout(5000);
+  this.slow(800);
+  // Get activities from June 2017
+  let before = new Date(2018, 6, 1);
+  let after = new Date(2018, 5, 1);
+  const data = await getActivities({before,after});
+  expect(data).to.be.an('array');
+});
+
 describe('caching', function() {
   it('should not make https request more than once', function() {
     expect(https.request.callCount).to.be.at.most(1);
