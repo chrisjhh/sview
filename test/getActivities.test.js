@@ -33,11 +33,16 @@ describe('getActivities', function() {
 it('before and after should work', async function() {
   this.timeout(5000);
   this.slow(800);
-  // Get activities from June 2017
+  // Get activities from June 2018
   let before = new Date(2018, 6, 1);
   let after = new Date(2018, 5, 1);
   const data = await getActivities({before,after});
+  const inRange = function(entry) {
+    const start = new Date(entry.start_date);
+    return start < before && start > after;
+  };
   expect(data).to.be.an('array');
+  expect(data.every(inRange)).to.be.true;
 });
 
 describe('caching', function() {
