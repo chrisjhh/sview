@@ -4,6 +4,7 @@
   "description": "Strava View",
   "main": "index.js",
   "scripts": {
+    "build": "webpack",
     "test": "mocha --require babel-core/register"
   },
   "repository": {
@@ -21,9 +22,13 @@
   },
   "homepage": "https://github.com/chrisjhh/sview#readme",
   "dependencies": {
+    "babel-loader": "^7.1.5",
     "http": "0.0.0",
     "https": "^1.0.0",
-    "querystring": "^0.2.0"
+    "querystring": "^0.2.0",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "webpack": "^4.16.3"
   },
   "devDependencies": {
     "babel-core": "^6.26.3",
@@ -35,6 +40,7 @@
     "fs": "0.0.1-security",
     "mocha": "^5.2.0",
     "path": "^0.12.7",
-    "sinon": "^6.1.4"
+    "sinon": "^6.1.4",
+    "webpack-cli": "^3.1.0"
   }
 }

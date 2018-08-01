@@ -1,10 +1,12 @@
 Inital stage:
-  ☐ Write a module to access Strava data
+  ✔ Write a module to access Strava data @done (2018-8-1 16:33:10)
   ☐ Write unit tests
   ☐ Use react and redux to display a list of strava activities
 Caching:
   ✔ Write and test an in memory cache @done (2018-7-31 14:43:18)
   ✔ Test items expire using asyncronous test @done (2018-7-31 14:55:49)
   ✔ Use sinon to test call to strava only happens once @done (2018-7-31 15:35:10)
-  ☐ Write and test a fs cache
-  ☐ Use a fs cache for test that writes to cache dir within project
+  ✔ Write and test a fs cache @done (2018-8-1 16:32:54)
+  ✔ Use a fs cache for test that writes to cache dir within project @done (2018-8-1 16:33:00)
+React:
+  ☐ Write a react component to display summary details of a Strava run
