@@ -8,7 +8,7 @@
 }
 
 .activity:hover {
-  background-color: lightgoldenrodyellow;
+  background-color: aliceblue;
 }
 
 .title {
@@ -18,18 +18,22 @@
 
 .activity .type {
   display: inline-block;
-  height: 30px;
-  width: 30px;
+  height: 38px;
+  width: 38px;
   border-radius: 5px;
   vertical-align: middle;
 }
 
 .run .type {
-  background: url("../img/run.png") 0px 1px/30px no-repeat, orange;
+  background: url("../img/run.png") 0px 1px/38px no-repeat, orange;
 }
 
 .swim .type {
-  background: url("../img/swim.png") -4px 4px/34px no-repeat, steelblue;
+  background: url("../img/swim.png") -4px 4px/40px no-repeat, steelblue;
+}
+
+.workout .type {
+  background: url("../img/jump.png") 0px 2px/38px no-repeat, mediumpurple;
 }
 
 .run .type.race {
