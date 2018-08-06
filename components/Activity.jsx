@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Run from './Run';
 import Swim from './Swim';
 import Workout from './Workout';
+import Ride from './Ride';
 
 const Activity = props => {
   switch (props.activity.type) {
@@ -19,6 +20,11 @@ const Activity = props => {
     case 'Workout' : {
       return (
         <Workout activity={props.activity}/>
+      );
+    }
+    case 'Ride' : {
+      return (
+        <Ride activity={props.activity}/>
       );
     }
     default: {

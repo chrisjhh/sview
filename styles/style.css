@@ -29,11 +29,15 @@
 }
 
 .swim .type {
-  background: url("../img/swim.png") -4px 4px/40px no-repeat, steelblue;
+  background: url("../img/swim.png") -4px 4px/40px no-repeat, cornflowerblue;
 }
 
 .workout .type {
-  background: url("../img/jump.png") 0px 2px/38px no-repeat, mediumpurple;
+  background: url("../img/jump.png") 0px 2px/38px no-repeat, grey;
+}
+
+.ride .type {
+  background: url("../img/ride.png") 0px 2px/38px no-repeat, mediumseagreen;
 }
 
 .run .type.race {
