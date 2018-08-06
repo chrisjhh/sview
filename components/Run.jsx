@@ -42,6 +42,9 @@ const Run = props => {
           <span className='detail pace'>{pace(props.activity.distance,time)}
             <span className="units">/mi</span>
           </span>
+          <span className='detail hr'>{Number(props.activity.average_heartrate).toFixed(0)}
+            <span className="units">♥</span>
+          </span>
         </div>
       </div>
     </div>
