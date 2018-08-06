@@ -53,3 +53,16 @@
 .detail {
   padding-right: 8px;
 }
+
+.pace {
+  font-weight: inherit;
+}
+
+.pace .units {
+  font-weight: normal;
+  font-size: 12px;
+}
+
+.swim .pace .units {
+  font-size: 10px;
+}
