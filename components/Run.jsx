@@ -12,6 +12,17 @@ const pace = function(distance, time) {
   return duration(time/mi);
 };
 
+const dateFormat = function(time) {
+  const date = new Date(time);
+  const day = date.getDate();
+  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
+    'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()];
+  const hour = date.getHours();
+  const min = date.getMinutes();
+  return `${hour.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')} ${weekday} ${day} ${month}`;
+};
+
 
 
 const Run = props => {
@@ -23,6 +34,7 @@ const Run = props => {
       <div className="contents">
         <div className="row1">
           <span className='title'>{props.activity.name}</span>
+          <span className='date'>{dateFormat(props.activity.start_date)}</span>
         </div>
         <div className="row2">
           <span className='detail distance'>{miles(props.activity.distance)}</span>
