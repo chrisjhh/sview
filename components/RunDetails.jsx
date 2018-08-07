@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
+import HeartRate from './HeartRate';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -23,9 +24,7 @@ const RunDetails = props => {
       <span className='pace'>{pace(props.activity.distance,time)}
         <span className="units">/mi</span>
       </span>
-      <span className='hr'>{Number(props.activity.average_heartrate).toFixed(0)}
-        <span className="units">♥</span>
-      </span>
+      <HeartRate activity={props.activity}/>
     </span>
   );
 };
