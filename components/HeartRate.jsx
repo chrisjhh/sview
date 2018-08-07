@@ -6,7 +6,8 @@ const HeartRate = props => {
     return (null);
   }
   return (
-    <span className='hr'>{Number(props.activity.average_heartrate).toFixed(0)}
+    <span className='hr' title={'Max HR: ' + Number(props.activity.max_heartrate).toFixed(0)}>
+      {Number(props.activity.average_heartrate).toFixed(0)}
       <span className="units">♥</span>
     </span>
   );
