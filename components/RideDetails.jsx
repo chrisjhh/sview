@@ -11,6 +11,9 @@ const RideDetails = props => (
   <div className='detail'>
     <span className='distance'>{miles(props.activity.distance)}</span>
     <span className='duration'>{duration(props.activity.elapsed_time)}</span>
+    <span className='hr'>{Number(props.activity.average_heartrate).toFixed(0)}
+      <span className="units">♥</span>
+    </span>
   </div>
 );
 

@@ -19,6 +19,9 @@ const SwimDetails = props => (
     <span className='pace'>{pace(props.activity.distance,props.activity.elapsed_time)}
       <span className="units">/100y</span>
     </span>
+    <span className='hr'>{Number(props.activity.average_heartrate).toFixed(0)}
+      <span className="units">♥</span>
+    </span>
   </div>
 );
 
