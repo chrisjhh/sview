@@ -67,7 +67,8 @@
   font-size: 10px;
 }
 
-.date {
+.date,
+.social {
   display: block;
   float: right;
   font-size: 12px;

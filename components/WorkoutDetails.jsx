@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 
 const WorkoutDetails = props => (
-  <div className="detail">
+  <span className="detail">
     <span className='duration'>{
       duration(props.activity.elapsed_time)}</span>
-  </div>
+  </span>
 );
 
 WorkoutDetails.propTypes = {

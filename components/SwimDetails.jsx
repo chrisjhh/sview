@@ -12,7 +12,7 @@ const pace = function(distance, time) {
 };
 
 const SwimDetails = props => (
-  <div className="detail">
+  <span className="detail">
     <span className='distance'>{metres(props.activity.distance)}</span>
     <span className='duration'>{
       duration(props.activity.elapsed_time)}</span>
@@ -22,7 +22,7 @@ const SwimDetails = props => (
     <span className='hr'>{Number(props.activity.average_heartrate).toFixed(0)}
       <span className="units">♥</span>
     </span>
-  </div>
+  </span>
 );
 
 SwimDetails.propTypes = {

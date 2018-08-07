@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ActivityDetails from './ActivityDetails'; 
+import SocialDetails from './SocialDetails';
 
 const dateFormat = function(time) {
   const date = new Date(time);
@@ -23,6 +24,7 @@ const Activity = props => (
       </div>
       <div className="row2">
         <ActivityDetails activity={props.activity}/>
+        <SocialDetails activity={props.activity}/>
       </div>
     </div>
   </div>
