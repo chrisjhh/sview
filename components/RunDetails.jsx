@@ -4,6 +4,7 @@ import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
+import HBPerMile from './HBPerMile';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -29,6 +30,7 @@ const RunDetails = props => {
       <HeartRate activity={props.activity}/>
       <XPoints activity={props.activity}/>
       <VDot activity={props.activity}/>
+      <HBPerMile activity={props.activity}/>
     </span>
   );
 };
