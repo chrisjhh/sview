@@ -2,7 +2,7 @@ import React from 'react';
 import { getActivities } from '../lib/cached_strava';
 import ActivityList from './ActivityList';
 
-const testing = true;
+const testing = false;
 let defaultActivities = null;
 if (testing) {
   defaultActivities = require('../examples/activities');

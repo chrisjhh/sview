@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
+import XPoints from './XPoints';
 
 const metres = function(distance) {
   return Number(distance).toFixed(0).toString() +  'm';
@@ -21,6 +22,7 @@ const SwimDetails = props => (
       <span className="units">/100y</span>
     </span>
     <HeartRate activity={props.activity}/>
+    <XPoints activity={props.activity}/>
   </span>
 );
 

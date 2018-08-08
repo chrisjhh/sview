@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
+import XPoints from './XPoints';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -13,6 +14,7 @@ const RideDetails = props => (
     <span className='distance'>{miles(props.activity.distance)}</span>
     <span className='duration'>{duration(props.activity.elapsed_time)}</span>
     <HeartRate  activity={props.activity}/>
+    <XPoints activity={props.activity}/>
   </span>
 );
 

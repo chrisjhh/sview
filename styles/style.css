@@ -54,6 +54,10 @@
   padding-right: 8px;
 }
 
+.detail span span {
+  padding-right: 0px;
+}
+
 .pace {
   font-weight: inherit;
 }
