@@ -62,14 +62,20 @@
   font-weight: inherit;
 }
 
-.pace .units {
+.units {
   font-weight: normal;
   font-size: 12px;
 }
 
-.swim .pace .units {
+.swim .pace .units,
+.vdot .units {
   font-size: 10px;
 }
+
+.vdot .units {
+  font-weight: bold;
+}
+
 
 .date,
 .social {

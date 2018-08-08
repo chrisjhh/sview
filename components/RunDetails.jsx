@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
 import XPoints from './XPoints';
+import VDot from './VDot';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -27,6 +28,7 @@ const RunDetails = props => {
       </span>
       <HeartRate activity={props.activity}/>
       <XPoints activity={props.activity}/>
+      <VDot activity={props.activity}/>
     </span>
   );
 };
