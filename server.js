@@ -2,9 +2,8 @@
 
 // Allow console logs from server script
 /*eslint no-console: "off" */
-import { getAthlete } from './lib/cached_strava';
-import { FScache } from './lib/fscache';
-import { setCache } from './lib/strava';
+import { setCache, getAthlete } from './lib/cached_strava';
+import { FSCache } from './lib/fscache';
 
 const express = require('express');
 const path = require('path');
@@ -15,7 +14,7 @@ app.set('PORT', port);
 
 
 // Use a File-System cache for responses from Strava
-const cache = new FScache(path.join(__dirname, 'server/cache'));
+const cache = new FSCache(path.join(__dirname, 'server/cache'));
 setCache(cache);
 
 
@@ -32,5 +31,5 @@ app.listen(app.get('PORT'), err => {
 app.get('/athlete', function(req,res) {
   getAthlete()
     .then(data => res.json(data))
-    .catch(res.sendStatus(500));
+    .catch(err => res.setStatus(500).send('Internal server error:', err));
 });

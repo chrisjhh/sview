@@ -4,6 +4,7 @@
   "description": "Strava View",
   "main": "index.js",
   "scripts": {
+    "start": "babel-node server.js --presets es2015",
     "build": "webpack",
     "test": "mocha --require babel-core/register"
   },
@@ -23,6 +24,7 @@
   "homepage": "https://github.com/chrisjhh/sview#readme",
   "dependencies": {
     "babel-loader": "^7.1.5",
+    "express": "^4.16.3",
     "http": "0.0.0",
     "https": "^1.0.0",
     "npm": "^6.3.0",
@@ -33,6 +35,7 @@
     "webpack": "^4.16.3"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
