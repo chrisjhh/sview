@@ -62,3 +62,23 @@ app.get('/api/v3/athletes/:id/stats', (req,res) => {
     .then(data => res.json(data))
     .catch(err => res.setStatus(500).send('Internal server error:', err));
 });
+app.get('/api/v3/activities/:id/laps', (req,res) => {
+  strava.getLaps(req.params.id)
+    .then(data => res.json(data))
+    .catch(err => res.setStatus(500).send('Internal server error:', err));
+});
+
+//?? Cache some stuff we might need
+// for (let i=1; i<=7; ++i) {
+//   let before = new Date(2018, i, 1).valueOf()/1000;
+//   let after = new Date(2018, i-1, 1).valueOf()/1000;
+//   strava.getActivities({before,after});
+// }
+strava.getActivities()
+  .then(data => {
+    for (let activity of data) {
+      //strava.getLaps(activity.id);
+      strava.getComments(activity.id);
+      strava.getKudos(activity.id);
+    }
+  });

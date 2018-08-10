@@ -1,7 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { hms, vdot } from '../lib/vdot';
+import { estimatedTimes, hms, vdot } from '../lib/vdot';
 
 describe('hms', function() {
   it('should work as expected', function() {
@@ -32,3 +32,9 @@ describe('VDOT', function() {
     expect(vdot(7000,hms('50:00'))).to.equal(null);
   });
 });
+
+// describe('estimatedTimes', function() {
+//   it('should work as expected', function() {
+//     expect(estimatedTimes(45)).to.deep.equal();
+//   });
+//});
