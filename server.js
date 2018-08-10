@@ -2,8 +2,8 @@
 
 // Allow console logs from server script
 /*eslint no-console: "off" */
-import { setCache, getAthlete } from './lib/cached_strava';
-import { FSCache } from './lib/fscache';
+import * as strava from './lib/cached_strava';
+import { FallbackCache } from './lib/fallbackcache';
 
 const express = require('express');
 const path = require('path');
@@ -13,9 +13,9 @@ const port = 7676;
 app.set('PORT', port);
 
 
-// Use a File-System cache for responses from Strava
-const cache = new FSCache(path.join(__dirname, 'server/cache'));
-setCache(cache);
+// Use a fallback File-System cache for responses from Strava
+const cache = new FallbackCache(path.join(__dirname, 'server', 'cache'));
+strava.setCache(cache);
 
 
 // Start the server
@@ -27,9 +27,38 @@ app.listen(app.get('PORT'), err => {
   }
 });
 
+
+// Log all requests
+app.use((req,res,next) => {
+  console.log(req.originalUrl);
+  next();
+});
+
 // Add the routes
-app.get('/athlete', function(req,res) {
-  getAthlete()
+app.get('/', (req,res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+app.get('/compiled/bundle.js', (req,res) => {
+  res.sendFile(path.join(__dirname, 'compiled', 'bundle.js'));
+});
+// Serve anything under styles and img as static content
+app.use('/styles', express.static('styles'));
+app.use('/img', express.static('img'));
+
+
+// Cached strava API interface
+app.get('/api/v3/athlete', (req,res) => {
+  strava.getAthlete()
+    .then(data => res.json(data))
+    .catch(err => res.setStatus(500).send('Internal server error:', err));
+});
+app.get('/api/v3/athlete/activities', (req,res) => {
+  strava.getActivities(req.query.length ? req.query : null)
+    .then(data => res.json(data))
+    .catch(err => res.setStatus(500).send('Internal server error:', err));
+});
+app.get('/api/v3/athletes/:id/stats', (req,res) => {
+  strava.getStats(req.params.id, req.query.length ? req.query : null)
     .then(data => res.json(data))
     .catch(err => res.setStatus(500).send('Internal server error:', err));
 });
