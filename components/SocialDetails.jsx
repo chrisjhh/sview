@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import Kudos from './Kudos';
 
 const SocialDetails = props => {
   if (props.activity.kudos_count === 0 &&
@@ -9,14 +10,14 @@ const SocialDetails = props => {
   if (props.activity.comment_count === 0) {
     return (
       <div className="social">
-        <span className='kudos'>{'👍' + props.activity.kudos_count}</span>
+        <Kudos activity={props.activity}/>
       </div>
     );
   }
   return (
     <div className="social">
       <span className='comments'>{'🗩' + props.activity.comment_count}</span>
-      <span className='kudos'>{'👍' + props.activity.kudos_count}</span>
+      <Kudos activity={props.activity}/>
     </div>
   );
 };
