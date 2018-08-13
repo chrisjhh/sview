@@ -50,32 +50,32 @@ app.use('/img', express.static('img'));
 app.get('/api/v3/athlete', (req,res) => {
   strava.getAthlete()
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athlete/activities', (req,res) => {
   strava.getActivities(req.query.length ? req.query : null)
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athletes/:id/stats', (req,res) => {
   strava.getStats(req.params.id, req.query.length ? req.query : null)
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/laps', (req,res) => {
-  strava.getLaps(req.params.id)
+  strava.getLaps(Number(req.params.id))
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/comments', (req,res) => {
-  strava.getComments(req.params.id)
+  strava.getComments(Number(req.params.id))
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/kudos', (req,res) => {
-  strava.getKudos(req.params.id)
+  strava.getKudos(Number(req.params.id))
     .then(data => res.json(data))
-    .catch(err => res.setStatus(500).send('Internal server error:', err));
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
 //?? Cache some stuff we might need
@@ -88,7 +88,12 @@ app.get('/api/v3/activities/:id/kudos', (req,res) => {
 //   .then(data => {
 //     for (let activity of data) {
 //       //strava.getLaps(activity.id);
-//       strava.getComments(activity.id);
-//       strava.getKudos(activity.id);
+//       //strava.getComments(activity.id);
+//       //strava.getKudos(activity.id);
+//       const options = {
+//         keys_by_type: 'true', 
+//         keys: 'distance,time,cadence,heartrate,latlng'
+//       };
+//       strava.getStreams(activity.id,options);
 //     }
 //   });

@@ -15,4 +15,4 @@ EXPOSE 7676
 
 CMD [ "npm", "start" ]
 # $ docker build -t sview .
-# $ docker run -it --rm --name sview_container sview
+# $ docker run -p 7676:7676 sview

@@ -18,7 +18,7 @@ class Kudos extends React.Component {
     }
     let kudos = <span>Loading...</span>;
     if (this.state.loaded) {
-      kudos = this.state.kudos.map((k,i) => <div key={i}>{k.firstname + ' ' + k.lastname}</div>)
+      kudos = this.state.kudos.map((k,i) => <div key={i}>{k.firstname + ' ' + k.lastname}</div>);
     }
     return (
       <span className='kudos tooltip' onMouseOver={this.loadKudos.bind(this)}>

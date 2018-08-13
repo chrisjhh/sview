@@ -1,26 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Kudos from './Kudos';
+import Comments from './Comments';
 
-const SocialDetails = props => {
-  if (props.activity.kudos_count === 0 &&
-    props.activity.comment_count === 0) {
-    return (<span></span>);
-  }
-  if (props.activity.comment_count === 0) {
-    return (
-      <div className="social">
-        <Kudos activity={props.activity}/>
-      </div>
-    );
-  }
-  return (
+const SocialDetails = props => 
+  (
     <div className="social">
-      <span className='comments'>{'🗩' + props.activity.comment_count}</span>
+      <Comments activity={props.activity}/>
       <Kudos activity={props.activity}/>
     </div>
   );
-};
+
 
 SocialDetails.propTypes = {
   activity: PropTypes.object.isRequired
