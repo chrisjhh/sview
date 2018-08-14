@@ -12,9 +12,17 @@ const VDot = props => {
   const vdotVal = vdot(props.activity.distance, props.activity.elapsed_time);
   const estimated = estimatedTimes(vdotVal);
   return (
-    <span className='vdot' title={`Estimated race times: 5K ${duration(estimated[4])} 10K ${duration(estimated[5])} HM ${duration(estimated[7])}`}>
+    <span className='vdot tooltip'>
       {vdotVal}
       <span className="units">VDOT</span>
+      <span className="tooltiptext">
+        <div>Estimated race times</div>
+        <table>
+          <tr><td>5K</td><td>{duration(estimated[4])}</td></tr>
+          <tr><td>10K</td><td>{duration(estimated[5])}</td></tr> 
+          <tr><td>HM</td><td>{duration(estimated[7])}</td></tr>
+        </table>
+      </span>
     </span>
   );
 };

@@ -141,6 +141,13 @@
   padding-left: 5px;
 }
 
+.vdot .tooltiptext {
+  font-size: 12px;
+  left: 50%;
+  margin-left: -80px;
+}
+
+
 .comments .athlete {
   font-weight: bold;
   padding-right: 10px;
