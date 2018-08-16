@@ -142,9 +142,19 @@
 }
 
 .vdot .tooltiptext {
+  width: 120px;
   font-size: 12px;
   left: 50%;
-  margin-left: -80px;
+  margin-left: -60px;
+}
+
+.vdot .tooltiptext table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.vdot td.time {
+  text-align: right;
 }
 
 

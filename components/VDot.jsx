@@ -18,9 +18,9 @@ const VDot = props => {
       <span className="tooltiptext">
         <div>Estimated race times</div>
         <table>
-          <tr><td>5K</td><td>{duration(estimated[4])}</td></tr>
-          <tr><td>10K</td><td>{duration(estimated[5])}</td></tr> 
-          <tr><td>HM</td><td>{duration(estimated[7])}</td></tr>
+          <tr><td>5K</td><td className="time">{duration(estimated[4])}</td></tr>
+          <tr><td>10K</td><td className="time">{duration(estimated[5])}</td></tr> 
+          <tr><td>HM</td><td className="time">{duration(estimated[7])}</td></tr>
         </table>
       </span>
     </span>
