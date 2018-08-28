@@ -30,9 +30,9 @@ const ActivityDetails = props => {
     }
     default: {
       return (
-        <div className='detail'>
+        <span className='detail'>
           <span className='duration'>{duration(props.activity.elapsed_time)}</span>
-        </div>
+        </span>
       );
     }
   }
