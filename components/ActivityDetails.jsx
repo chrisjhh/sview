@@ -5,6 +5,7 @@ import SwimDetails from './SwimDetails';
 import WorkoutDetails from './WorkoutDetails';
 import RideDetails from './RideDetails';
 import { duration } from '../lib/duration';
+import WalkDetails from './WalkDetails';
 
 const ActivityDetails = props => {
   switch (props.activity.type) {
@@ -26,6 +27,11 @@ const ActivityDetails = props => {
     case 'Ride' : {
       return (
         <RideDetails activity={props.activity}/>
+      );
+    }
+    case 'Walk' : {
+      return (
+        <WalkDetails activity={props.activity}/>
       );
     }
     default: {
