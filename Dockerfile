@@ -11,6 +11,9 @@ RUN npm install
 # Excludes stuff in .dockerignore
 COPY . .
 
+# Create a volume for the cache
+VOLUME [ "/usr/src/app/server/cache" ]
+
 EXPOSE 7676
 
 CMD [ "npm", "start" ]
