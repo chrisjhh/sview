@@ -3,6 +3,7 @@ import { useLocal, getAthlete } from '../lib/strava';
 import { getActivities, getStats } from '../lib/cached_strava';
 import ActivityList from './ActivityList';
 import Stats from './Stats';
+import Map from './Map';
 
 let testing = true;
 let defaultActivities = null;
@@ -26,15 +27,21 @@ class App extends React.Component {
     super(props);
     this.state = {
       stats : defaultStats,
-      activities: defaultActivities
+      activities: defaultActivities,
+      currentActivity: defaultActivities ? defaultActivities[0].id : null
     };
   }
 
   render() {
     return (
       <div>
-        <Stats stats={this.state.stats}/>
-        <ActivityList activities={this.state.activities}/>
+        <div className="currentactivity">
+          <Map id={this.state.currentActivity}/>
+        </div>
+        <div className="activities">
+          <Stats stats={this.state.stats}/>
+          <ActivityList activities={this.state.activities}/>
+        </div>
       </div>
     );
   }
@@ -43,7 +50,7 @@ class App extends React.Component {
     // Load data from Strava
     if (!testing) {
       getActivities()
-        .then(data => this.setState({activities: data}));
+        .then(data => this.setState({activities: data, currentActivity: data[0].id}));
       getAthlete()
         .then(data => getStats(data.id))
         .then(data => this.setState({stats: data}));

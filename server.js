@@ -77,6 +77,11 @@ app.get('/api/v3/activities/:id/kudos', (req,res) => {
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
+app.get('/api/v3/activities/:id/streams', (req,res) => {
+  strava.getStreams(Number(req.params.id), req.query)
+    .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
 
 //?? Cache some stuff we might need
 // for (let i=1; i<=7; ++i) {

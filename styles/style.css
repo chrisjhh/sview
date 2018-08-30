@@ -167,3 +167,21 @@
   padding-right: 10px;
 }
 
+.currentActivity,
+#mapid {
+  width: 600px;
+}
+
+#mapid {
+  height: 400px;
+}
+
+
+.currentactivity,
+.activities {
+  display: inline-block;
+  vertical-align: top;
+}
+
+
+
