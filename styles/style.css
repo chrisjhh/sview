@@ -5,6 +5,7 @@
   margin: 2px;
   width: fit-content;
   font-family: Arial, Helvetica, sans-serif;
+  cursor: pointer;
 }
 
 .activity:hover {

@@ -9,7 +9,7 @@ const ActivityList = props => {
     );
   }
   const activities = props.activities.map(activity => 
-    <Activity activity={activity} key={activity.id}/>
+    <Activity activity={activity} key={activity.id} selectActivity={props.selectActivity}/>
   );
   return (
     <div className='activities'>
@@ -19,7 +19,8 @@ const ActivityList = props => {
 };
 
 ActivityList.propTypes = {
-  activities: PropTypes.array
+  activities: PropTypes.array,
+  selectActivity: PropTypes.func.isRequired
 };
 
 export default ActivityList;

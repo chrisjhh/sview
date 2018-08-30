@@ -40,7 +40,7 @@ class App extends React.Component {
         </div>
         <div className="activities">
           <Stats stats={this.state.stats}/>
-          <ActivityList activities={this.state.activities}/>
+          <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}/>
         </div>
       </div>
     );
@@ -55,6 +55,10 @@ class App extends React.Component {
         .then(data => getStats(data.id))
         .then(data => this.setState({stats: data}));
     }
+  }
+
+  selectActivity(activityID) {
+    this.setState({currentActivity: activityID});
   }
 
 }

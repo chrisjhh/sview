@@ -32,7 +32,6 @@ class Map extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('componentDidUpdate', this.props.id, prevProps.id);
     // Does the state need to be updated
     if (this.props.id !== this.state.id) {
       this.setState({id: this.props.id});
@@ -89,7 +88,7 @@ class Map extends React.Component {
 
   updateMap() {
     this.layer.clearLayers();
-    switch (this.view) {
+    switch (this.state.view) {
       case 'route': 
         this.displayRoute();
         break;
