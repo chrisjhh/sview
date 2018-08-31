@@ -48,8 +48,9 @@ class Map extends React.Component {
       <div>
         <div id="mapid"></div>
         <div>
-          <span onClick={() => this.setState({view: 'route'})}>Route</span>
-          <span onClick={() => this.setState({view: 'hr'})}>HR</span>
+          <span onClick={() => this.setState({view: 'route'})}>Route</span> | 
+          <span onClick={() => this.setState({view: 'hr'})}>HR</span> |
+          <span onClick={() => this.setState({view: 'cadence'})}>Cadence</span>
         </div>
       </div>
     );
@@ -100,6 +101,9 @@ class Map extends React.Component {
         break;
       case 'hr':
         this.displayHR();
+        break;
+      case 'cadence':
+        this.displayCadence();
         break;
       default:
         console.log('Unknown view option:', this.view);
@@ -167,7 +171,56 @@ class Map extends React.Component {
       L.polyline(datapoints, {color: col}).addTo(this.layer);
     }
   }
+
+  displayCadence() {
+    const latlng = this.getStream('latlng');
+    const cadence = this.getStream('cadence');
+    if (!latlng || !cadence) {
+      return;
+    }
+    const color = function(spm) {
+      if (spm < 70) {
+        return 'black';
+      }
+      if (spm < 75) {
+        return 'red';
+      }
+      if (spm < 80) {
+        return 'orange';
+      }
+      if (spm < 85) {
+        return 'yellow';
+      }
+      if (spm < 90) {
+        return 'green';
+      }
+      return 'blue';
+    };
+    let datapoints = [];
+    let col = null;
+    for (let i=0; i<latlng.data.length; ++i) {
+      let icol = color(cadence.data[i]);
+      if (icol === col) {
+        datapoints.push(latlng.data[i]);
+      } else {
+        if (datapoints.length > 0) {
+          datapoints.push(latlng.data[i]);
+          L.polyline(datapoints, {color: col}).addTo(this.layer);
+        }
+        datapoints = [];
+        datapoints.push(latlng.data[i]);
+        col = icol;
+      }
+    }
+    if (datapoints.length > 1) {
+      L.polyline(datapoints, {color: col}).addTo(this.layer);
+    }
+  }
 }
+
+
+
+
 
 Map.propTypes = {
   id: PropTypes.number
