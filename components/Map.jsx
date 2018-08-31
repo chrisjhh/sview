@@ -48,8 +48,9 @@ class Map extends React.Component {
       <div>
         <div id="mapid"></div>
         <div>
-          <span onClick={() => this.setState({view: 'route'})}>Route</span> | 
-          <span onClick={() => this.setState({view: 'hr'})}>HR</span> |
+          <span onClick={() => this.setState({view: 'route'})}>Route</span>|
+          <span onClick={() => this.setState({view: 'pace'})}>Pace</span>|
+          <span onClick={() => this.setState({view: 'hr'})}>HR</span>|
           <span onClick={() => this.setState({view: 'cadence'})}>Cadence</span>
         </div>
       </div>
@@ -104,6 +105,9 @@ class Map extends React.Component {
         break;
       case 'cadence':
         this.displayCadence();
+        break;
+      case 'pace':
+        this.displayPace();
         break;
       default:
         console.log('Unknown view option:', this.view);
@@ -210,6 +214,91 @@ class Map extends React.Component {
         datapoints = [];
         datapoints.push(latlng.data[i]);
         col = icol;
+      }
+    }
+    if (datapoints.length > 1) {
+      L.polyline(datapoints, {color: col}).addTo(this.layer);
+    }
+  }
+
+  displayPace() {
+    const latlng = this.getStream('latlng');
+    const distance = this.getStream('distance');
+    const time = this.getStream('time');
+    if (!latlng || !distance || !time) {
+      return;
+    }
+    const color = function(pace) {
+      if (pace > 12) {
+        return 'black';
+      }
+      if (pace > 10) {
+        return 'red';
+      }
+      if (pace > 9) {
+        return 'orange';
+      }
+      if (pace > 8.5) {
+        return 'yellow';
+      }
+      if (pace > 8) {
+        return 'green';
+      }
+      if (pace > 7.5) {
+        return 'lightgreen';
+      }
+      if (pace > 7) {
+        return 'blue';
+      }
+      if (pace > 6.5) {
+        return 'lightblue';
+      }
+      if (pace > 6) {
+        return 'purple';
+      }
+      if (pace > 5.5) {
+        return 'plum';
+      }
+      if (pace > 5) {
+        return 'lightpink';
+      }
+      if (pace > 4.5) {
+        return 'mistyrose';
+      }
+      return 'white';
+    };
+    let datapoints = [];
+    let col = null;
+    let lastpace = null;
+    let smooth = 0.4;
+    for (let i=0; i<latlng.data.length; ++i) {
+      let j = i - 40;
+      if (j < 0) {
+        datapoints.push(latlng.data[i]);
+        continue;
+      }
+      let t = time.data[i] - time.data[j];
+      let d = distance.data[i] - distance.data[j];
+      let pace = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
+      let icol = color(pace);
+      if (col === null) {
+        col = icol;
+        lastpace = pace;
+      }
+      if (icol === col) {
+        datapoints.push(latlng.data[i]);
+        lastpace = pace;
+      } else if (Math.abs(pace - lastpace) < smooth) {
+        datapoints.push(latlng.data[i]);
+      } else {
+        if (datapoints.length > 0) {
+          datapoints.push(latlng.data[i]);
+          L.polyline(datapoints, {color: col}).addTo(this.layer);
+        }
+        datapoints = [];
+        datapoints.push(latlng.data[i]);
+        col = icol;
+        lastpace = pace;
       }
     }
     if (datapoints.length > 1) {
