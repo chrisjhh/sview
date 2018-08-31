@@ -45,7 +45,13 @@ class Map extends React.Component {
 
   render() {
     return (
-      <div id="mapid"></div>
+      <div>
+        <div id="mapid"></div>
+        <div>
+          <span onClick={() => this.setState({view: 'route'})}>Route</span>
+          <span onClick={() => this.setState({view: 'hr'})}>HR</span>
+        </div>
+      </div>
     );
   }
 
@@ -75,14 +81,14 @@ class Map extends React.Component {
       console.log(`Expected one ${type} stream`);
       return null;
     }
-    return result;
+    return result[0];
   }
 
   fitBounds() {
     // Get the latlng stream
     const result = this.getStream('latlng');
     if (result) {
-      this.map.fitBounds(result[0].data);
+      this.map.fitBounds(result.data);
     }
   }
 
@@ -91,6 +97,9 @@ class Map extends React.Component {
     switch (this.state.view) {
       case 'route': 
         this.displayRoute();
+        break;
+      case 'hr':
+        this.displayHR();
         break;
       default:
         console.log('Unknown view option:', this.view);
@@ -102,7 +111,60 @@ class Map extends React.Component {
     // Get the latlng stream
     const result = this.getStream('latlng');
     if (result) {
-      this.route = L.polyline(result[0].data, {color: 'red'}).addTo(this.layer);
+      this.route = L.polyline(result.data, {color: 'red'}).addTo(this.layer);
+    }
+  }
+
+  displayHR() {
+    const latlng = this.getStream('latlng');
+    const hr = this.getStream('heartrate');
+    if (!latlng || !hr) {
+      return;
+    }
+    const rest = 54;
+    const max = 188;
+    const reserve = max - rest;
+    const z1 = rest + 0.5 * reserve;
+    const z2 = rest + 0.75 * reserve;
+    const z3 = rest + 0.85 * reserve;
+    const z4 = rest + 0.9 * reserve;
+    const z5 = rest + 0.95 * reserve;
+    const color = function(bpm) {
+      if (bpm < z1) {
+        return 'white';
+      }
+      if (bpm < z2) {
+        return 'blue';
+      }
+      if (bpm < z3) {
+        return 'green';
+      }
+      if (bpm < z4) {
+        return 'yellow';
+      }
+      if (bpm < z5) {
+        return 'orange';
+      }
+      return 'red';
+    };
+    let datapoints = [];
+    let col = null;
+    for (let i=0; i<latlng.data.length; ++i) {
+      let icol = color(hr.data[i]);
+      if (icol === col) {
+        datapoints.push(latlng.data[i]);
+      } else {
+        if (datapoints.length > 0) {
+          datapoints.push(latlng.data[i]);
+          L.polyline(datapoints, {color: col}).addTo(this.layer);
+        }
+        datapoints = [];
+        datapoints.push(latlng.data[i]);
+        col = icol;
+      }
+    }
+    if (datapoints.length > 1) {
+      L.polyline(datapoints, {color: col}).addTo(this.layer);
     }
   }
 }
