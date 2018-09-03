@@ -206,22 +206,40 @@ class Map extends React.Component {
       return;
     }
     const color = function(spm) {
+      if (spm < 60) {
+        return colorchart[0];
+      }
+      if (spm < 65) {
+        return colorchart[1];
+      }
       if (spm < 70) {
-        return 'black';
+        return colorchart[2];
       }
       if (spm < 75) {
-        return 'red';
+        return colorchart[3];
       }
       if (spm < 80) {
-        return 'orange';
+        return colorchart[4];
       }
       if (spm < 85) {
-        return 'yellow';
+        return colorchart[5];
       }
       if (spm < 90) {
-        return 'green';
+        return colorchart[6];
       }
-      return 'blue';
+      if (spm < 95) {
+        return colorchart[7];
+      }
+      if (spm < 100) {
+        return colorchart[8];
+      }
+      if (spm < 105) {
+        return colorchart[9];
+      }
+      if (spm < 110) {
+        return colorchart[10];
+      }
+      return colorchart[11];
     };
     let datapoints = [];
     let col = null;
@@ -347,49 +365,49 @@ class Map extends React.Component {
       return;
     }
     const color = function(hpm) {
-      if (hpm > 1600) {
+      if (hpm > 1800) {
         return colorchart[0];
       }
-      if (hpm > 1500) {
+      if (hpm > 1700) {
         return colorchart[1];
       }
-      if (hpm > 1400) {
+      if (hpm > 1600) {
         return colorchart[2];
       }
-      if (hpm > 1300) {
+      if (hpm > 1500) {
         return colorchart[3];
       }
-      if (hpm > 1200) {
+      if (hpm > 1400) {
         return colorchart[4];
       }
-      if (hpm > 1100) {
+      if (hpm > 1300) {
         return colorchart[5];
       }
-      if (hpm > 1000) {
+      if (hpm > 1200) {
         return colorchart[6];
       }
-      if (hpm > 900) {
+      if (hpm > 1100) {
         return colorchart[7];
       }
-      if (hpm > 800) {
+      if (hpm > 1000) {
         return colorchart[8];
       }
-      if (hpm > 700) {
+      if (hpm > 900) {
         return colorchart[9];
       }
-      if (hpm > 600) {
+      if (hpm > 800) {
         return colorchart[10];
       }
-      if (hpm > 500) {
+      if (hpm > 700) {
         return colorchart[11];
       }
-      if (hpm > 400) {
+      if (hpm > 600) {
         return colorchart[12];
       }
-      if (hpm > 300) {
+      if (hpm > 500) {
         return colorchart[13];
       }
-      if (hpm > 200) {
+      if (hpm > 400) {
         return colorchart[14];
       }
       return colorchart[15];
