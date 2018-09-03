@@ -143,21 +143,21 @@ class Map extends React.Component {
     const z5 = rest + 0.95 * reserve;
     const color = function(bpm) {
       if (bpm < z1) {
-        return 'white';
+        return '#0040ff';
       }
       if (bpm < z2) {
-        return 'blue';
+        return '#00ffff';
       }
       if (bpm < z3) {
-        return 'green';
+        return '#40ff00';
       }
       if (bpm < z4) {
-        return 'yellow';
+        return '#ffff00';
       }
       if (bpm < z5) {
-        return 'orange';
+        return '#ff8000';
       }
-      return 'red';
+      return '#ff0000';
     };
     let datapoints = [];
     let col = null;
@@ -237,6 +237,9 @@ class Map extends React.Component {
         return 'black';
       }
       if (pace > 10) {
+        return 'purple';
+      }
+      if (pace > 9.5) {
         return 'red';
       }
       if (pace > 9) {
@@ -258,16 +261,16 @@ class Map extends React.Component {
         return 'lightblue';
       }
       if (pace > 6) {
-        return 'purple';
-      }
-      if (pace > 5.5) {
         return 'plum';
       }
-      if (pace > 5) {
+      if (pace > 5.5) {
         return 'lightpink';
       }
-      if (pace > 4.5) {
+      if (pace > 5) {
         return 'mistyrose';
+      }
+      if (pace > 4.5) {
+        return 'lightcyan';
       }
       return 'white';
     };

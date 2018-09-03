@@ -10,6 +10,9 @@ const VDot = props => {
     return (null);
   }
   const vdotVal = vdot(props.activity.distance, props.activity.elapsed_time);
+  if (vdotVal == null) {
+    return null;
+  }
   const estimated = estimatedTimes(vdotVal);
   return (
     <span className='vdot tooltip'>
