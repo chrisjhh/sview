@@ -7,6 +7,25 @@ import { getStreams } from '../lib/cached_strava';
 // Allow console log messages for now
 /*eslint no-console: off*/
 
+const colorchart = [
+  '#000000', // 0 - Black
+  '#404040', // 1 - Grey
+  '#800080', // 2 - Purple
+  '#990000', // 3 - red
+  '#cc6600', // 4 - orange
+  '#e6e600', // 5 - yellow
+  '#39e600', // 6 - green
+  '#00e6e6', // 7 - blue
+  '#0080ff', // 8 - blue
+  '#531aff', // 9 - blue
+  '#9933ff', // 10 - purple
+  '#ff4dff', // 11 - pink
+  '#ff99e6', // 12 - pink
+  '#f2d9df', // 13 - pink
+  '#f5efef', // 14 - pink
+  '#ffffff', // 15 - white
+];
+
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -234,45 +253,51 @@ class Map extends React.Component {
     }
     const color = function(pace) {
       if (pace > 12) {
-        return 'black';
+        return colorchart[0];
+      }
+      if (pace > 11) {
+        return colorchart[1];
       }
       if (pace > 10) {
-        return 'purple';
+        return colorchart[2];
       }
       if (pace > 9.5) {
-        return 'red';
+        return colorchart[3];
       }
       if (pace > 9) {
-        return 'orange';
+        return colorchart[4];
       }
       if (pace > 8.5) {
-        return 'yellow';
+        return colorchart[5];
       }
       if (pace > 8) {
-        return 'green';
+        return colorchart[6];
       }
       if (pace > 7.5) {
-        return 'lightgreen';
+        return colorchart[7];
       }
       if (pace > 7) {
-        return 'blue';
+        return colorchart[8];
       }
       if (pace > 6.5) {
-        return 'lightblue';
+        return colorchart[9];
       }
       if (pace > 6) {
-        return 'plum';
+        return colorchart[10];
       }
       if (pace > 5.5) {
-        return 'lightpink';
+        return colorchart[11];
       }
       if (pace > 5) {
-        return 'mistyrose';
+        return colorchart[12];
       }
       if (pace > 4.5) {
-        return 'lightcyan';
+        return colorchart[13];
       }
-      return 'white';
+      if (pace > 4) {
+        return colorchart[14];
+      }
+      return colorchart[15];
     };
     let datapoints = [];
     let col = null;
@@ -322,45 +347,57 @@ class Map extends React.Component {
       return;
     }
     const color = function(hpm) {
-      if (hpm > 1450) {
-        return 'purple';
+      if (hpm > 1600) {
+        return colorchart[0];
+      }
+      if (hpm > 1500) {
+        return colorchart[1];
       }
       if (hpm > 1400) {
-        return 'red';
-      }
-      if (hpm > 1350) {
-        return 'orange';
+        return colorchart[2];
       }
       if (hpm > 1300) {
-        return 'yellow';
-      }
-      if (hpm > 1250) {
-        return 'green';
+        return colorchart[3];
       }
       if (hpm > 1200) {
-        return 'lightgreen';
-      }
-      if (hpm > 1150) {
-        return 'blue';
+        return colorchart[4];
       }
       if (hpm > 1100) {
-        return 'lightblue';
-      }
-      if (hpm > 1050) {
-        return 'pink';
+        return colorchart[5];
       }
       if (hpm > 1000) {
-        return 'lightpink';
+        return colorchart[6];
       }
-      if (hpm > 950) {
-        return 'mistyrose';
+      if (hpm > 900) {
+        return colorchart[7];
       }
-      return 'white';
+      if (hpm > 800) {
+        return colorchart[8];
+      }
+      if (hpm > 700) {
+        return colorchart[9];
+      }
+      if (hpm > 600) {
+        return colorchart[10];
+      }
+      if (hpm > 500) {
+        return colorchart[11];
+      }
+      if (hpm > 400) {
+        return colorchart[12];
+      }
+      if (hpm > 300) {
+        return colorchart[13];
+      }
+      if (hpm > 200) {
+        return colorchart[14];
+      }
+      return colorchart[15];
     };
     let datapoints = [];
     let col = null;
     let lasthpm = null;
-    let smooth = 40;
+    let smooth = 60;
     for (let i=0; i<latlng.data.length; ++i) {
       let j = i - 40;
       if (j < 0) {
