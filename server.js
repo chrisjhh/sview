@@ -3,6 +3,7 @@
 // Allow console logs from server script
 /*eslint no-console: "off" */
 import * as strava from './lib/cached_strava';
+import { getTile, cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
 
 const express = require('express');
@@ -30,7 +31,10 @@ app.listen(app.get('PORT'), err => {
 
 // Log all requests
 app.use((req,res,next) => {
-  console.log(req.originalUrl);
+  let url = req.originalUrl;
+  // Hide sensitive data
+  url = url.replace(/access_token=[^&]+/,'access_token=***');
+  console.log(url);
   next();
 });
 
@@ -80,6 +84,15 @@ app.get('/api/v3/activities/:id/kudos', (req,res) => {
 app.get('/api/v3/activities/:id/streams', (req,res) => {
   strava.getStreams(Number(req.params.id), req.query)
     .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+
+// Cached Mapbox interface
+app.get('/api.tiles.mapbox.com/v4/:id/:z/:x/:y.png', (req,res) => {
+  cachedGetTile(cache)(req.params.id,req.params.z,req.params.x,req.params.y,req.query)
+    .then(data => {
+      res.type('image/png').send(Buffer.from(data, 'base64'));
+    })
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 

@@ -37,7 +37,13 @@ class Map extends React.Component {
 
   componentDidMount()  {
     this.map = L.map('mapid');
-    L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+    let mapurl = 'https://api.tiles.mapbox.com/v4';
+    // Check if we are running on local server with its own cache
+    if (location.port && !isNaN(Number(location.port)) && 
+        Number(location.port) !== 80) {
+      mapurl = '/api.tiles.mapbox.com/v4';
+    }
+    L.tileLayer(`${mapurl}/{id}/{z}/{x}/{y}.png?access_token={accessToken}`, {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
       maxZoom: 18,
       id: 'mapbox.streets',
