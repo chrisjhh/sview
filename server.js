@@ -93,7 +93,10 @@ app.get('/api.tiles.mapbox.com/v4/:id/:z/:x/:y.png', (req,res) => {
     .then(data => {
       res.type('image/png').send(Buffer.from(data, 'base64'));
     })
-    .catch(err => res.status(500).send('Internal server error: ' + err));
+    .catch(err => {
+      console.log(err);
+      res.status(500).send('Internal server error: ' + err)
+    });
 });
 
 //?? Cache some stuff we might need
