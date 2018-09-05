@@ -77,7 +77,8 @@ class Map extends React.Component {
           <span onClick={() => this.setState({view: 'pace'})}>Pace</span>|
           <span onClick={() => this.setState({view: 'hr'})}>HR</span>|
           <span onClick={() => this.setState({view: 'cadence'})}>Cadence</span>|
-          <span onClick={() => this.setState({view: 'efficiency'})}>Efficiency</span>
+          <span onClick={() => this.setState({view: 'efficiency'})}>Efficiency</span>|
+          <span onClick={() => this.setState({view: 'inclination'})}>Inclination</span>
         </div>
       </div>
     );
@@ -86,7 +87,7 @@ class Map extends React.Component {
   loadStreams() {
     const options = {
       keys_by_type: true,
-      keys: 'cadence,distance,time,heartrate,latlng'
+      keys: 'cadence,distance,time,heartrate,latlng,altitude'
     };
     getStreams(this.state.id, options)
       .then(data => {
@@ -137,6 +138,9 @@ class Map extends React.Component {
         break;
       case 'efficiency':
         this.displayEfficiency();
+        break;
+      case 'inclination':
+        this.displayInclination();
         break;
       default:
         console.log('Unknown view option:', this.view);
@@ -451,6 +455,92 @@ class Map extends React.Component {
         datapoints.push(latlng.data[i]);
         col = icol;
         lasthpm = hpm;
+      }
+    }
+    if (datapoints.length > 1) {
+      L.polyline(datapoints, {color: col}).addTo(this.layer);
+    }
+  }
+
+  displayInclination() {
+    const latlng = this.getStream('latlng');
+    const distance = this.getStream('distance');
+    const altitude = this.getStream('altitude');
+    if (!latlng || !distance || !altitude) {
+      return;
+    }
+    const color = function(inc) {
+      if (inc > 12) {
+        return colorchart[0];
+      }
+      if (inc > 9) {
+        return colorchart[1];
+      }
+      if (inc > 7) {
+        return colorchart[2];
+      }
+      if (inc > 5) {
+        return colorchart[3];
+      }
+      if (inc > 3) {
+        return colorchart[4];
+      }
+      if (inc > 1) {
+        return colorchart[5];
+      }
+      if (inc > -1) {
+        return colorchart[6];
+      }
+      if (inc > -3) {
+        return colorchart[7];
+      }
+      if (inc > -5) {
+        return colorchart[8];
+      }
+      if (inc > -7) {
+        return colorchart[9];
+      }
+      if (inc > -9) {
+        return colorchart[10];
+      }
+      if (inc > -11) {
+        return colorchart[11];
+      }
+      return colorchart[12];
+    };
+    let datapoints = [];
+    let col = null;
+    let lastinc = null;
+    let smooth = 0.5;
+    for (let i=0; i<latlng.data.length; ++i) {
+      let j = i - 4;
+      let k = i + 4;
+      if (j < 0 || k >= latlng.data.length) {
+        datapoints.push(latlng.data[i]);
+        continue;
+      }
+      let d = distance.data[k] - distance.data[j];
+      let h = altitude.data[k] - altitude.data[j];
+      let inc = h * 100 / d;
+      let icol = color(inc);
+      if (col === null) {
+        col = icol;
+        lastinc = inc;
+      }
+      if (icol === col) {
+        datapoints.push(latlng.data[i]);
+        lastinc = inc;
+      } else if (Math.abs(inc - lastinc) < smooth) {
+        datapoints.push(latlng.data[i]);
+      } else {
+        if (datapoints.length > 0) {
+          datapoints.push(latlng.data[i]);
+          L.polyline(datapoints, {color: col}).addTo(this.layer);
+        }
+        datapoints = [];
+        datapoints.push(latlng.data[i]);
+        col = icol;
+        lastinc = inc;
       }
     }
     if (datapoints.length > 1) {
