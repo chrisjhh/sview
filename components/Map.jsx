@@ -126,6 +126,7 @@ class Map extends React.Component {
     switch (this.state.view) {
       case 'route': 
         this.displayRoute();
+        this.displayMileMarkers();
         break;
       case 'hr':
         this.displayHR();
@@ -545,6 +546,24 @@ class Map extends React.Component {
     }
     if (datapoints.length > 1) {
       L.polyline(datapoints, {color: col}).addTo(this.layer);
+    }
+  }
+
+  displayMileMarkers(interval=1609.4) {
+    const latlng = this.getStream('latlng');
+    const distance = this.getStream('distance');
+    if (!latlng || !distance) {
+      return;
+    }
+    let n = 1;
+    let nextMarker = interval;
+    for (let i=0;i<latlng.data.length; ++i) {
+      if (distance.data[i] >= nextMarker) {
+        let circle = L.circle(latlng.data[i], {radius: 10}).addTo(this.layer);
+        circle.bindTooltip(n.toString()).openTooltip();
+        ++n;
+        nextMarker += interval;
+      }
     }
   }
 }
