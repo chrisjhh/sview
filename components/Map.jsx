@@ -559,8 +559,8 @@ class Map extends React.Component {
     let nextMarker = interval;
     for (let i=0;i<latlng.data.length; ++i) {
       if (distance.data[i] >= nextMarker) {
-        let circle = L.circle(latlng.data[i], {radius: 10}).addTo(this.layer);
-        circle.bindTooltip(n.toString()).openTooltip();
+        let marker = L.circleMarker(latlng.data[i], {radius: 3}).addTo(this.layer);
+        marker.bindTooltip(n.toString()).openTooltip();
         ++n;
         nextMarker += interval;
       }
