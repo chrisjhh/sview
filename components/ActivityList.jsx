@@ -12,7 +12,7 @@ const ActivityList = props => {
     <Activity activity={activity} key={activity.id} selectActivity={props.selectActivity}/>
   );
   return (
-    <div className='activities'>
+    <div className='activitylist'>
       {activities}
     </div>
   );
