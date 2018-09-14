@@ -184,5 +184,34 @@
   vertical-align: top;
 }
 
+.mapoption {
+  color: steelblue;
+  cursor: pointer;
+}
+.mapoption:hover {
+  color: orange;
+}
+
+.mapoption:after {
+  content: '|';
+}
+
+.mapoption:last-child:after {
+  content: '';
+}
+
+.mapoption.selected {
+  font-weight: bold;
+  color: black;
+  cursor: default;
+}
+
+.mapoption.disabled {
+  color: gray;
+  cursor: default;
+}
+
+
+
 
 

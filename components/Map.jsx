@@ -31,7 +31,8 @@ class Map extends React.Component {
     super(props);
     this.state = {
       id: props.id,
-      view: 'route'
+      view: 'route',
+      streams: null
     };
   }
 
@@ -69,16 +70,41 @@ class Map extends React.Component {
   }
 
   render() {
+    const options = ['Route', 'Pace', 'HR', 'Cadence', 'Efficiency', 'Inclination'];
+    let values = {};
+    for (let opt of options) {
+      let view = opt.toLowerCase();
+      values[opt] = {};
+      values[opt]['classes'] = ['mapoption'];
+      if (this.state.view == view) {
+        values[opt]['classes'].push('selected');
+      }
+    }
+    if (!this.getStream('heartrate')) {
+      for (let v of ['HR', 'Efficiency']) {
+        values[v]['classes'].push('disabled');
+      }
+    }
+    if (!this.getStream('cadence')) {
+      values['Cadence']['classes'].push('disabled');
+    }
+    if (!this.getStream('latlng')) {
+      values['Route']['classes'].push('disabled');
+    }
+    if (!this.getStream('distance')) {
+      values['Pace']['classes'].push('disabled');
+    }
+    if (!this.getStream('altitude')) {
+      values['Inclination']['classes'].push('disabled');
+    }
+    const controls = options.map(opt => (
+      <span key={opt} className={values[opt].classes.join(' ')} onClick={() => this.setState({view: opt.toLowerCase()})}>{opt}</span>
+    ));
     return (
       <div>
         <div id="mapid"></div>
-        <div>
-          <span onClick={() => this.setState({view: 'route'})}>Route</span>|
-          <span onClick={() => this.setState({view: 'pace'})}>Pace</span>|
-          <span onClick={() => this.setState({view: 'hr'})}>HR</span>|
-          <span onClick={() => this.setState({view: 'cadence'})}>Cadence</span>|
-          <span onClick={() => this.setState({view: 'efficiency'})}>Efficiency</span>|
-          <span onClick={() => this.setState({view: 'inclination'})}>Inclination</span>
+        <div className="mapoptions">
+          {controls}
         </div>
       </div>
     );
@@ -91,7 +117,7 @@ class Map extends React.Component {
     };
     getStreams(this.state.id, options)
       .then(data => {
-        this.streams = data;
+        this.setState({streams: data});
         this.fitBounds();
         this.updateMap();
       })
@@ -101,13 +127,13 @@ class Map extends React.Component {
   }
 
   getStream(type) {
-    if (!this.streams) {
-      console.log('No streams');
+    if (!this.state.streams) {
+      //console.log('No streams');
       return null;
     }
-    const result = this.streams.filter(stream => stream.type === type);
+    const result = this.state.streams.filter(stream => stream.type === type);
     if (result.length !== 1) {
-      console.log(`Expected one ${type} stream`);
+      //console.log(`Expected one ${type} stream`);
       return null;
     }
     return result[0];
@@ -549,7 +575,7 @@ class Map extends React.Component {
     }
   }
 
-  displayMileMarkers(interval=1609.4) {
+  displayMileMarkers(interval=1609.34) {
     const latlng = this.getStream('latlng');
     const distance = this.getStream('distance');
     if (!latlng || !distance) {
