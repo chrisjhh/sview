@@ -17,7 +17,8 @@ CREATE TABLE public.runs
     max_heartrate real,
     average_cadence real,
     route_id integer,
-    strava_id integer,
+    strava_id bigint,
+    moving_time real,
     CONSTRAINT runs_pkey PRIMARY KEY (id),
     CONSTRAINT run_unique_start_time UNIQUE (start_time)
 ,
