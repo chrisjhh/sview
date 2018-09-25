@@ -5,11 +5,13 @@ import { Database } from '../db/database';
 import { getActivities } from '../lib/dev/test_strava';
 
 let db = null;
+let data = null;
 
 describe.only('Connection', function() {
 
-  before(function() {
+  before(async function() {
     db = new Database();
+    data = await getActivities();
   });
 
   it('should report version', async function() {
@@ -17,10 +19,14 @@ describe.only('Connection', function() {
     expect(version).to.equal('1.0');
   });
 
-  it('should be able to add run', async function() {
-    const data = await getActivities();
+  it.skip('should be able to add run', async function() {
     const id = await db.addRun(data[0]);
     expect(id).to.be.a('number');
+  });
+
+  it('should be able to fetch run', async function() {
+    const rowData = await db.fetchRun(data[0]);
+    expect(Number(rowData.strava_id)).to.equal(data[0].id);
   });
 
   after(async function() {
