@@ -92,6 +92,37 @@ export class Database {
   }
 
   /**
+   * Update a run in the database
+   * Does nothing if the run does not need updating
+   * @param {Object} data The strava data of the run to update
+   */
+  updateRun(data) {
+    return this.fetchRun(data)
+      .then(rowData => {
+        if (rowData == null) {
+          return null;
+        }
+        if (Number(rowData.strava_id) !== data.id) {
+          return Promise.reject(
+            new Error('Run to update does not reference the same strava run')
+          );
+        }
+        if (rowData.name !== data.name ||
+          Boolean(rowData.isRace) !== (data.workout_type == 1)) {
+          return this.qi.query(
+            'UPDATE runs SET name = $1, is_race = $2 WHERE id = $3',
+            [data.name, (data.workout_type == 1), rowData.id]
+          )
+            .then(() => true);
+        }
+        // No update required
+        return false;
+      });
+  }
+
+  
+
+  /**
    * Disconnect from the database
    * Release any connections
    */
