@@ -25,7 +25,7 @@ export class Database {
       return Promise.resolve(this._version);
     }
     return this.qi.query(
-      'SELECT value FROM properties WHERE key = \'version\''
+      'SELECT value FROM properties WHERE key = \'version\' LIMIT 1'
     )
       .then(res => {
         if (res.rowCount === 1) {
@@ -76,7 +76,7 @@ export class Database {
    */
   fetchRun(data) {
     return this.qi.query(
-      'SELECT * FROM runs WHERE start_time = $1',
+      'SELECT * FROM runs WHERE start_time = $1 LIMIT 1',
       [data.start_date_local]
     )
       .then(res => {
@@ -108,7 +108,7 @@ export class Database {
           );
         }
         if (rowData.name !== data.name ||
-          Boolean(rowData.isRace) !== (data.workout_type == 1)) {
+            rowData.is_race !== (data.workout_type === 1)) {
           return this.qi.query(
             'UPDATE runs SET name = $1, is_race = $2 WHERE id = $3',
             [data.name, (data.workout_type == 1), rowData.id]
@@ -120,7 +120,7 @@ export class Database {
       });
   }
 
-  
+
 
   /**
    * Disconnect from the database

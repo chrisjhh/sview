@@ -29,6 +29,24 @@ describe.only('Connection', function() {
     expect(Number(rowData.strava_id)).to.equal(data[0].id);
   });
 
+  it('should be able to update', async function() {
+    let result = await db.updateRun(data[0]);
+    expect(result).to.be.false;
+    result = await db.updateRun(data[1]);
+    expect(result).to.be.null;
+    ++data[0].id;
+    const bad_update = async function() {await db.updateRun(data[0]);};
+    //expect(bad_update).to.throw();
+    --data[0].id;
+    const old_name = data[0].name;
+    data[0].name = 'Testing';
+    result = await db.updateRun(data[0]);
+    expect(result).to.be.true;
+    data[0].name = old_name;
+    result = await db.updateRun(data[0]);
+    expect(result).to.be.true;
+  });
+
   after(async function() {
     await db.disconnect();
   });
