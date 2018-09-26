@@ -6,14 +6,15 @@ import { getActivities } from '../lib/dev/test_strava';
 
 let db = null;
 let data = null;
+let connected = null;
 
 describe('Database', function() {
 
   before(async function() {
     db = new Database({database: 'running_test'});
     data = await getActivities();
-    
-    if (!await db.connected()) {
+    connected = await db.connected();
+    if (!connected) {
       console.log('Not connected');
       this.skip();
     }
@@ -57,7 +58,9 @@ describe('Database', function() {
   });
 
   after(async function() {
-    await db.disconnect();
-    await db.drop();
+    if (connected) {
+      await db.disconnect();
+      await db.drop();
+    }
   });
 });
