@@ -4,7 +4,7 @@
 
 CREATE TABLE public.runs
 (
-    id integer NOT NULL DEFAULT nextval('run_id_seq'::regclass),
+    id serial NOT NULL,
     name character varying(255) COLLATE pg_catalog."default",
     start_time timestamp with time zone NOT NULL,
     distance real,

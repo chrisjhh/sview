@@ -10,17 +10,18 @@ let data = null;
 describe('Database', function() {
 
   before(async function() {
-    db = new Database({database: 'running'});
+    db = new Database({database: 'running_test'});
     data = await getActivities();
     
     if (!await db.connected()) {
       console.log('Not connected');
       this.skip();
     }
-    if (!await db.exists()) {
-      console.log('Database does not exist');
-      this.skip();
-    }
+    if (await db.exists()) {
+      await db.drop();
+    } 
+    await db.create();
+    await db.createTables();
   });
 
   it('should report version', async function() {
@@ -28,7 +29,7 @@ describe('Database', function() {
     expect(version).to.equal('1.0');
   });
 
-  it.skip('should be able to add run', async function() {
+  it('should be able to add run', async function() {
     const id = await db.addRun(data[0]);
     expect(id).to.be.a('number');
   });
@@ -58,5 +59,6 @@ describe('Database', function() {
 
   after(async function() {
     await db.disconnect();
+    await db.drop();
   });
 });

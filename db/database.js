@@ -1,4 +1,6 @@
 const { Pool, Client } = require('pg');
+const path = require('path');
+const fs = require('fs');
 
 const point = function(arr) {
   return `(${arr[0]},${arr[1]})`;
@@ -83,9 +85,14 @@ export class Database {
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
-      .then(() => client.query('CREATE DATABASE $1', [db]))
+      .then(() => client.query(`CREATE DATABASE ${db}`))
       .then(res => {
         client.end();
+        if (db === this.configuration.database) {
+          this.disconnect();
+          this.pool = new Pool(this.configuration);
+          this.qi = this.pool;
+        }
         return res.rowCount === 1;
       })
       .catch(err => {
@@ -106,7 +113,12 @@ export class Database {
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
-      .then(() => client.query('DROP DATABASE $1', [db]))
+      .then(() => {
+        if (db === this.configuration.database) {
+          this.disconnect();
+        }
+      })
+      .then(() => client.query(`DROP DATABASE ${db}`))
       .then(res => {
         client.end();
         return res.rowCount === 1;
@@ -194,6 +206,58 @@ export class Database {
   }
 
 
+  tableExists(tableName) {
+    return this.qi.query(
+      'SELECT 1 FROM pg_tables WHERE schemaname = \'public\' AND tablename = $1',
+      [tableName]
+    )
+      .then(res => {
+        return res.rowCount === 1;
+      });
+  }
+
+  async createTables() {
+    await this.startTransaction();
+    try {
+      await this._execSQL('properties.sql');
+      await this._execSQL('routes.sql');
+      await this._execSQL('runs.sql');
+      await this.qi.query('INSERT INTO properties (key,value) values (\'version\',\'1.0\')');
+    } catch(err) {
+      await this.abortTransaction();
+      throw err;
+    }
+    await this.endTransaction();
+  }
+
+  _execSQL(file) {
+    return new Promise((resolve, reject) => {
+    // Only exec files in the current directory
+      fs.readdir(__dirname, (err, files) => {
+        if (err) {
+          return reject(err);
+        }
+        const sql_files = files.filter(x => x.endsWith('.sql'));
+        if (!sql_files.includes(file)) {
+          return reject(new Error(`No such sql file ${file}`));
+        }
+        fs.readFile(path.join(__dirname,file), (err, buffer) => {
+          if (err) {
+            return reject(err);
+          }
+          const sql = buffer.toString();
+          this.qi.query(sql, (err, res) => {
+            if (err) {
+              return reject(err);
+            }
+            return resolve(res);
+          });
+        });
+      });
+    });
+  }
+
+
   startTransaction() {
     if (this.qi !== this.pool) {
       throw new Error('Transaction already in progress');
@@ -235,6 +299,11 @@ export class Database {
    * Release any connections
    */
   disconnect() {
-    return this.pool.end();
+    if (this.pool != null) {
+      const pool = this.pool;
+      this.pool = null;
+      this.qi = null;
+      pool.end();
+    }
   }
 }
