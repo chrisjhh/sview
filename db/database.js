@@ -1,18 +1,58 @@
-const { Pool } = require('pg');
+const { Pool, Client } = require('pg');
 
 const point = function(arr) {
   return `(${arr[0]},${arr[1]})`;
 };
+
+const defaults = {
+  host: 'localhost',
+  user: 'postgres',
+  database: 'running'
+};
 export class Database {
-  constructor() {
-    this.pool = new Pool({
-      host: 'localhost',
-      user: 'postgres',
-      database: 'running'
-    });
+  constructor(config) {
+    this.configuration = {...defaults,...config};
+    this.pool = new Pool(this.configuration);
     // Query interface
     // By default use pool, but may want to use client for grouped transactions
     this.qi = this.pool;
+  }
+
+  /**
+   * Check if the database server is connected
+   * @returns {boolean}
+   */
+  connected() {
+    let config = {...this.configuration};
+    config.database = 'postgres';
+    const client = new Client(config);
+    return client.connect()
+      .then(() => {
+        client.end();
+        return true;
+      })
+      .catch(() => false);
+  }
+
+  /**
+   * Check if the database exists
+   * @param {String} db Optional name of database to check. 
+   */
+  exists(db = this.configuration.database) {
+    let config = {...this.configuration};
+    config.database = 'postgres';
+    const client = new Client(config);
+    return client.connect()
+      .then(() => client.query('SELECT 1 FROM pg_database WHERE datname = $1', [db]))
+      .then(res => {
+        client.end();
+        return res.rowCount === 1;
+      })
+      .catch(err => {
+        client.end();
+        return Promise.reject(err);
+      });
+    //.finally(() => client.end());
   }
 
   /**
@@ -60,11 +100,11 @@ export class Database {
           return res.rows[0].id;
         }
         return null;
-      })
-      .catch(err => {
-        console.log('Error adding run', err);
-        return null;
       });
+    // .catch(err => {
+    //   console.log('Error adding run', err);
+    //   return null;
+    // });
   }
 
   /**
@@ -84,11 +124,11 @@ export class Database {
           return res.rows[0];
         }
         return null;
-      })
-      .catch(err => {
-        console.log('Error fetching run', err);
-        return null;
       });
+    // .catch(err => {
+    //   console.log('Error fetching run', err);
+    //   return null;
+    // });
   }
 
   /**

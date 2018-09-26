@@ -7,11 +7,20 @@ import { getActivities } from '../lib/dev/test_strava';
 let db = null;
 let data = null;
 
-describe.only('Connection', function() {
+describe('Database', function() {
 
   before(async function() {
-    db = new Database();
+    db = new Database({database: 'running'});
     data = await getActivities();
+    
+    if (!await db.connected()) {
+      console.log('Not connected');
+      this.skip();
+    }
+    if (!await db.exists()) {
+      console.log('Database does not exist');
+      this.skip();
+    }
   });
 
   it('should report version', async function() {
