@@ -43,7 +43,7 @@ export class Database {
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
-      .then(() => client.query('SELECT 1 FROM pg_database WHERE datname = $1', [db]))
+      .then(() => client.query('SELECT 1 FROM pg_database WHERE datname = $1 LIMIT 1', [db]))
       .then(res => {
         client.end();
         return res.rowCount === 1;
