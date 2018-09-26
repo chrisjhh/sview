@@ -52,7 +52,6 @@ export class Database {
         client.end();
         return Promise.reject(err);
       });
-    //.finally(() => client.end());
   }
 
   /**
@@ -73,6 +72,48 @@ export class Database {
           return this._version;
         }
         return undefined;
+      });
+  }
+
+  /**
+   * Creates the database
+   */
+  create(db = this.configuration.database) {
+    let config = {...this.configuration};
+    config.database = 'postgres';
+    const client = new Client(config);
+    return client.connect()
+      .then(() => client.query('CREATE DATABASE $1', [db]))
+      .then(res => {
+        client.end();
+        return res.rowCount === 1;
+      })
+      .catch(err => {
+        client.end();
+        return Promise.reject(err);
+      });
+  }
+
+  /**
+   * Drops the database
+   * @param {String} db Optional database to drop
+   */
+  drop(db = this.configuration.database) {
+    if (['running', 'postgres'].includes(db)) {
+      throw new Error('Trying to drop main database');
+    }
+    let config = {...this.configuration};
+    config.database = 'postgres';
+    const client = new Client(config);
+    return client.connect()
+      .then(() => client.query('DROP DATABASE $1', [db]))
+      .then(res => {
+        client.end();
+        return res.rowCount === 1;
+      })
+      .catch(err => {
+        client.end();
+        return Promise.reject(err);
       });
   }
 
@@ -101,10 +142,6 @@ export class Database {
         }
         return null;
       });
-    // .catch(err => {
-    //   console.log('Error adding run', err);
-    //   return null;
-    // });
   }
 
   /**
@@ -125,10 +162,6 @@ export class Database {
         }
         return null;
       });
-    // .catch(err => {
-    //   console.log('Error fetching run', err);
-    //   return null;
-    // });
   }
 
   /**
@@ -160,6 +193,41 @@ export class Database {
       });
   }
 
+
+  startTransaction() {
+    if (this.qi !== this.pool) {
+      throw new Error('Transaction already in progress');
+    }
+    this.pool.connect()
+      .then(client => {
+        this.qi = client;
+        return this.qi.query('BEGIN');
+      });
+  }
+
+  abortTransaction() {
+    if (this.qi === this.pool) {
+      throw new Error('Transaction not in progress');
+    }
+    this.qi.query('ROLLBACK')
+      .then(() => {
+        const client = this.qi;
+        this.qi = this.pool;
+        client.release();
+      });
+  }
+
+  endTransaction() {
+    if (this.qi === this.pool) {
+      throw new Error('Transaction not in progress');
+    }
+    this.qi.query('COMMIT')
+      .then(() => {
+        const client = this.qi;
+        this.qi = this.pool;
+        client.release();
+      });
+  }
 
 
   /**
