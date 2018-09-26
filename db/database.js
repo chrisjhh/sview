@@ -37,6 +37,22 @@ export class Database {
   }
 
   /**
+   * Initialise the database
+   * Creates the database and tables if they do not exist
+   * Updates tables if necessary
+   * Must be connected
+   */
+  async init() {
+    if (!await this.exists()) {
+      // Create the database and the tables
+      await this.create();
+      await this.createTables();
+    } else {
+      await this.updateTables();
+    }
+  }
+
+  /**
    * Check if the database exists
    * @param {String} db Optional name of database to check. 
    */
@@ -293,6 +309,19 @@ export class Database {
       });
   }
 
+  async updateTables() {
+    const version = await this.version();
+    switch (version) {
+      case '1.0':
+        // This is the current version
+        // Everything is OK
+        break;
+      default:
+        // Unknown version
+        // Cannot continue
+        throw new Error(`Unknown and unsupported database version ${version}`);
+    }
+  }
 
   /**
    * Disconnect from the database

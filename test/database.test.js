@@ -20,8 +20,7 @@ describe('Database', function() {
     if (await db.exists()) {
       await db.drop();
     } 
-    await db.create();
-    await db.createTables();
+    await db.init();
   });
 
   it('should report version', async function() {
