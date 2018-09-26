@@ -336,3 +336,6 @@ export class Database {
     }
   }
 }
+
+// To start database using docker
+// docker run -it --rm -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres
