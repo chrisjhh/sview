@@ -8,7 +8,7 @@ let db = null;
 let data = null;
 let connected = null;
 
-describe('Database', function() {
+describe.only('Database', function() {
 
   before(async function() {
     db = new Database({database: 'running_test'});
@@ -45,8 +45,13 @@ describe('Database', function() {
     result = await db.updateRun(data[1]);
     expect(result).to.be.null;
     ++data[0].id;
-    const bad_update = async function() {await db.updateRun(data[0]);};
-    //expect(bad_update).to.throw();
+    let exception_throw = false;
+    try {
+      await db.updateRun(data[0]);
+    } catch(err) {
+      exception_throw = true;
+    }
+    expect(exception_throw).to.be.true;
     --data[0].id;
     const old_name = data[0].name;
     data[0].name = 'Testing';

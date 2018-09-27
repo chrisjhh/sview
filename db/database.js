@@ -18,6 +18,9 @@ export class Database {
     // Query interface
     // By default use pool, but may want to use client for grouped transactions
     this.qi = this.pool;
+    // Savepoint stack
+    this.savepoint_stack = [];
+    this.savepoint_id = 0;
   }
 
   /**
@@ -221,6 +224,106 @@ export class Database {
       });
   }
 
+  /**
+   * Update / insert a run from the strava details if necessary
+   * For new run, find the route it belongs to, or create a new route
+   * @param {Object} data The strava data for the run to set
+   */
+  async setRunAndRoute(data) {
+    await this.startTransaction();
+    try {
+      const updated = await this.updateRun(data);
+      if (updated == null) {
+        // Does not exist in database, so add it
+        const id = await this.addRun(data);
+        // Find the route
+        let route_id = await this.findRoute(data);
+        if (route_id == null) {
+          // Create a new route for this run
+          route_id = await this.createRoute(data);
+        }
+        // Set the route id for this run
+        await this.qi.query(
+          'UPDATE runs SET route_id = $1 WHERE id = $2',
+          [route_id, id]
+        );
+        // Update the route with new average distance and elevation
+        await this.qi.query(
+          `UPDATE
+            routes 
+          SET 
+            (distance, elevation) = 
+            (SELECT 
+              avg(distance), avg(elevation)
+            FROM
+              runs
+            WHERE
+              route_id = $1
+            )
+          WHERE id = $1`,
+          [route_id]
+        );
+      }
+    } catch(err) {
+      await this.abortTransaction();
+      throw err;
+    }
+    await this.endTransaction();
+  }
+
+  /**
+   * Find a route matching the run data
+   * @param {Object} data 
+   */
+  findRoute(data) {
+    return this.qi.query(
+      `SELECT 
+        id 
+      FROM routes 
+      WHERE 
+        start_latlng = $1 AND 
+        end_latlng = $2 AND 
+        distance BETWEEN $3 AND $4 AND
+        elevation DETWEEN $5 AND $6`,
+      [point(data.start_latlng),point(data.end_latlng),
+        (data.distance - 250), (data.distance + 250),
+        (data.total_elevation_gain - 5), (data.total_elevation_gain + 5)
+      ]
+    )
+      .then(res => {
+        if (res.rowCount > 1) {
+          throw new Error('More than one route matches run');
+        }
+        if (res.rowCount === 1) {
+          return res.rows[0].id;
+        }
+        return null;
+      });
+  }
+
+  /**
+   * Create a route from a run
+   * @param {Object} data The strava data for the run to use to create the route
+   */
+  createRoute(data) {
+    return this.qi.query(
+      `INSERT INTO 
+        routes 
+        (distance, elevation, start_latlng, end_latlng)
+      VALUES
+        ($1, $2, $3, $4)
+      RETURNING id`,
+      [data.distance, data.total_elevation_gain,
+        point(data.start_latlng), point(data.end_latlng)]
+    )
+      .then(res => {
+        if (res.rowCount === 1) {
+          return res.rows[0].id;
+        }
+        return null;
+      });
+  }
+
 
   tableExists(tableName) {
     return this.qi.query(
@@ -276,7 +379,12 @@ export class Database {
 
   startTransaction() {
     if (this.qi !== this.pool) {
-      throw new Error('Transaction already in progress');
+      // Transaction already in progress. Use savepoint
+      if (this.savepoint) {
+        this.savepoint_stack.push(this.savepoint);
+      }
+      this.savepoint = 'tx_savepoint_' + (++this.savepoint_id);
+      return this.qi.query(`SAVEPOINT ${this.savepoint}`);
     }
     this.pool.connect()
       .then(client => {
@@ -289,10 +397,16 @@ export class Database {
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
-    this.qi.query('ROLLBACK')
+    if (this.savepoint) {
+      const savepoint = this.savepoint;
+      this.savepoint = this.savepoint_stack.pop();
+      return this.qi.query(`ROLLBACK TO ${savepoint}`);
+    }
+    return this.qi.query('ROLLBACK')
       .then(() => {
         const client = this.qi;
         this.qi = this.pool;
+        this.savepoint_id = 0;
         client.release();
       });
   }
@@ -301,10 +415,15 @@ export class Database {
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
-    this.qi.query('COMMIT')
+    if (this.savepoint) {
+      this.savepoint = this.savepoint_stack.pop();
+      return Promise.resolve(null);
+    }
+    return this.qi.query('COMMIT')
       .then(() => {
         const client = this.qi;
         this.qi = this.pool;
+        this.savepoint_id = 0;
         client.release();
       });
   }

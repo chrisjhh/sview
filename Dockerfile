@@ -17,5 +17,8 @@ VOLUME [ "/usr/src/app/server/cache" ]
 EXPOSE 7676
 
 CMD [ "npm", "start" ]
-# $ docker build -t sview .
-# $ docker run -p 7676:7676 sview
+# > docker build -t sview .
+# > docker run -p 7676:7676 sview
+# or
+# > docker container create svcache
+# > docker run --rm -p 7676:7676 -v svcache:/usr/src/app/server/cache sview
