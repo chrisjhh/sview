@@ -100,6 +100,9 @@ export class Database {
    * Creates the database
    */
   create(db = this.configuration.database) {
+    if (!/^[a-z_]+$/.test(db)) {
+      throw new Error('Invalid database name');
+    }
     let config = {...this.configuration};
     config.database = 'postgres';
     const client = new Client(config);
@@ -127,6 +130,9 @@ export class Database {
   drop(db = this.configuration.database) {
     if (['running', 'postgres'].includes(db)) {
       throw new Error('Trying to drop main database');
+    }
+    if (!/^[a-z_]+$/.test(db)) {
+      throw new Error('Invalid database name');
     }
     let config = {...this.configuration};
     config.database = 'postgres';

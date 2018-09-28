@@ -13,6 +13,7 @@ describe.only('Database', function() {
   before(async function() {
     db = new Database({database: 'running_test'});
     data = await getActivities();
+    data = data.filter(x => x.type === 'Run');
     connected = await db.connected();
     if (!connected) {
       console.log('Not connected');
