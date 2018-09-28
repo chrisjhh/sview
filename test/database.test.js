@@ -173,6 +173,30 @@ describe.only('Database', function() {
     data[0].distance += 200;
     found = await db.findRoute(data[0]);
     expect(found).to.equal(id);
+    data[0].start_latlng[0] += 0.01;
+    found = await db.findRoute(data[0]);
+    expect(found).to.be.null;
+  });
+
+  it('setRunAndRoute', async function() {
+    // Check if will set run and route for new run
+    await db.setRunAndRoute(data[1]);
+    const rowData = await db.fetchRun(data[1]);
+    expect(rowData).to.not.be.null;
+    expect(rowData.route_id).to.be.a('number');
+    let found = await db.findRoute(data[1]);
+    expect(found).to.equal(rowData.route_id);
+    // Check it will update
+    data[1].name = 'More Testing';
+    await db.setRunAndRoute(data[1]);
+    let updatedRowData = await db.fetchRun(data[1]);
+    expect(updatedRowData.id).to.equal(rowData.id);
+    expect(updatedRowData.route_id).to.equal(rowData.route_id);
+    expect(updatedRowData.name).to.equal('More Testing');
+    // Check it doesn't complain when no update required
+    await db.setRunAndRoute(data[1]);
+    updatedRowData = await db.fetchRun(data[1]);
+    expect(updatedRowData.id).to.equal(rowData.id);
   });
 
   after(async function() {
