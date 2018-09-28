@@ -40,7 +40,7 @@ describe.only('Database', function() {
     expect(Number(rowData.strava_id)).to.equal(data[0].id);
   });
 
-  it('should be able to update', async function() {
+  it('should be able to update run', async function() {
     let result = await db.updateRun(data[0]);
     expect(result).to.be.false;
     result = await db.updateRun(data[1]);
@@ -151,6 +151,28 @@ describe.only('Database', function() {
     await db.abortTransaction();
     value = await db.property('c');
     expect(value).to.equal('1');
+  });
+
+  it('should be able to create and find route', async function() {
+    const id = await db.createRoute(data[0]);
+    expect(id).to.be.a('number');
+    let found = await db.findRoute(data[0]);
+    expect(found).to.equal(id);
+    data[0].distance -= 200;
+    data[0].total_elevation_gain -= 3;
+    found = await db.findRoute(data[0]);
+    expect(found).to.equal(id);
+    data[0].distance -= 200;
+    found = await db.findRoute(data[0]);
+    expect(found).to.be.null;
+    data[0].distance += 200;
+    data[0].total_elevation_gain -= 3;
+    found = await db.findRoute(data[0]);
+    expect(found).to.be.null;
+    data[0].total_elevation_gain += 6;
+    data[0].distance += 200;
+    found = await db.findRoute(data[0]);
+    expect(found).to.equal(id);
   });
 
   after(async function() {

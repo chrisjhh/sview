@@ -327,10 +327,10 @@ export class Database {
         id 
       FROM routes 
       WHERE 
-        start_latlng = $1 AND 
-        end_latlng = $2 AND 
+        start_latlng ~= $1 AND 
+        end_latlng ~= $2 AND 
         distance BETWEEN $3 AND $4 AND
-        elevation DETWEEN $5 AND $6`,
+        elevation BETWEEN $5 AND $6`,
       [point(data.start_latlng),point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
         (data.total_elevation_gain - 5), (data.total_elevation_gain + 5)
