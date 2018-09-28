@@ -97,6 +97,46 @@ export class Database {
   }
 
   /**
+   * Get a value from the property key by key
+   * @param {String} key 
+   */
+  property(key) {
+    return this.qi.query(
+      'SELECT value FROM properties WHERE key = $1 LIMIT 1',
+      [key]
+    )
+      .then(res => {
+        if (res.rowCount === 1) {
+          return res.rows[0].value;
+        }
+        return undefined;
+      });
+  }
+
+  /**
+   * Set a value in the properties table
+   * Either by inserting a new row or updating the existing one
+   * @param {String} key 
+   * @param {String} value 
+   */
+  setProperty(key,value) {
+    return this.property(key)
+      .then(oldValue => {
+        if (oldValue === undefined) {
+          return this.qi.query(
+            'INSERT INTO properties (key,value) values ($1,$2)',
+            [key,value]
+          );
+        } else {
+          return this.qi.query(
+            'UPDATE properties SET value = $2 WHERE key = $1',
+            [key,value]
+          );
+        }
+      });
+  }
+
+  /**
    * Creates the database
    */
   create(db = this.configuration.database) {
@@ -392,7 +432,7 @@ export class Database {
       this.savepoint = 'tx_savepoint_' + (++this.savepoint_id);
       return this.qi.query(`SAVEPOINT ${this.savepoint}`);
     }
-    this.pool.connect()
+    return this.pool.connect()
       .then(client => {
         this.qi = client;
         return this.qi.query('BEGIN');

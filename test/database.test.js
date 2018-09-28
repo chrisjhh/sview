@@ -63,6 +63,96 @@ describe.only('Database', function() {
     expect(result).to.be.true;
   });
 
+  it('should be able to set and get properties', async function() {
+    let value = await db.property('dummy');
+    expect(value).to.be.undefined;
+    await db.setProperty('dummy', '1');
+    value = await db.property('dummy');
+    expect(value).to.equal('1');
+    await db.setProperty('dummy', '2');
+    value = await db.property('dummy');
+    expect(value).to.equal('2');
+  });
+
+  it('should be able to abort transaction', async function() {
+    // Aborted transaction
+    let value = await db.property('a');
+    expect(value).to.be.undefined;
+    await db.startTransaction();
+    await db.setProperty('a', '1');
+    value = await db.property('a');
+    expect(value).to.equal('1');
+    await db.abortTransaction();
+    value = await db.property('a');
+    expect(value).to.be.undefined;
+  });
+
+  it('should be able to accept transaction', async function() {
+    // Completed transaction
+    let value = await db.property('z');
+    expect(value).to.be.undefined;
+    await db.startTransaction();
+    await db.setProperty('z', '1');
+    value = await db.property('z');
+    expect(value).to.equal('1');
+    await db.endTransaction();
+    value = await db.property('z');
+    expect(value).to.equal('1');
+  });
+
+  it('should be able to use nested transactions', async function() {
+    // Start root transaction
+    let value = await db.property('c');
+    expect(value).to.be.undefined;
+    await db.startTransaction();
+    await db.setProperty('c', '1');
+    value = await db.property('c');
+    expect(value).to.equal('1');
+
+
+    value = await db.property('d');
+    expect(value).to.be.undefined;
+    // Start nested transaction
+    await db.startTransaction();
+    await db.setProperty('d', '2');
+    value = await db.property('d');
+    expect(value).to.equal('2');
+
+    // Abort nested transaction
+    await db.abortTransaction();
+    value = await db.property('d');
+    expect(value).to.be.undefined;
+    value = await db.property('c');
+    expect(value).to.equal('1');
+
+    // Accept root transaction
+    await db.endTransaction();
+    value = await db.property('c');
+    expect(value).to.equal('1');
+    value = await db.property('d');
+    expect(value).to.be.undefined;
+
+    // Start new root transaction
+    await db.startTransaction();
+    await db.startTransaction();
+    await db.setProperty('c', '9');
+    await db.endTransaction();
+    value = await db.property('c');
+    expect(value).to.equal('9');
+
+    await db.startTransaction();
+    await db.setProperty('c', '10');
+    value = await db.property('c');
+    expect(value).to.equal('10');
+    await db.abortTransaction();
+    value = await db.property('c');
+    expect(value).to.equal('9');
+
+    await db.abortTransaction();
+    value = await db.property('c');
+    expect(value).to.equal('1');
+  });
+
   after(async function() {
     if (connected) {
       await db.disconnect();
