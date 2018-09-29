@@ -24,3 +24,6 @@ CMD [ "npm", "start" ]
 # > docker container create svcache
 # > docker run --rm -v pgdata:/var/lib/postgresql/data --name pgdb postgres
 # > docker run --rm -p 7676:7676 -v svcache:/usr/src/app/server/cache --link pgdb:postgres --name dev_sview sview
+#
+# To connect
+# > docker run -it --rm --link pgdb:postgres  postgres psql -h postgres -U postgres
