@@ -271,6 +271,24 @@ export class Database {
   }
 
   /**
+   * Update database from array of strava run data
+   * @param {Array} runs 
+   */
+  async updateRunData(runs) {
+    for (let run of runs) {
+      if (run.type !== 'Run') {
+        continue;
+      }
+      try {
+        await this.setRunAndRoute(run);
+      } catch (err) {
+        console.log('Error updating run data for run', run);
+        console.log('Erorr:', err);
+      }
+    }
+  }
+
+  /**
    * Update / insert a run from the strava details if necessary
    * For new run, find the route it belongs to, or create a new route
    * @param {Object} data The strava data for the run to set

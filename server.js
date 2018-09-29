@@ -5,6 +5,7 @@
 import * as strava from './lib/cached_strava';
 import { getTile, cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
+import { Database } from './db/database';
 
 const express = require('express');
 const path = require('path');
@@ -17,6 +18,13 @@ app.set('PORT', port);
 // Use a fallback File-System cache for responses from Strava
 const cache = new FallbackCache(path.join(__dirname, 'server', 'cache'));
 strava.setCache(cache);
+
+// Try to connect to the running database
+const db = new Database();
+const db_connected = db.connected();
+if (db_connected) {
+  db.init();
+}
 
 
 // Start the server
@@ -58,7 +66,13 @@ app.get('/api/v3/athlete', (req,res) => {
 });
 app.get('/api/v3/athlete/activities', (req,res) => {
   strava.getActivities(req.query.length ? req.query : null)
-    .then(data => res.json(data))
+    .then(data => {
+      if (db_connected) {
+        db.updateRunData(data)
+          .catch(err => console.log('Error updating run data'));
+      }
+      return res.json(data);
+    })
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athletes/:id/stats', (req,res) => {
