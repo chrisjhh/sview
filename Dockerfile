@@ -20,5 +20,7 @@ CMD [ "npm", "start" ]
 # > docker build -t sview .
 # > docker run -p 7676:7676 sview
 # or
+# > docker container create pgdata
 # > docker container create svcache
-# > docker run --rm -p 7676:7676 -v svcache:/usr/src/app/server/cache sview
+# > docker run --rm -v pgdata:/var/lib/postgresql/data --name pgdb postgres
+# > docker run --rm -p 7676:7676 -v svcache:/usr/src/app/server/cache --link pgdb:postgres --name dev_sview sview

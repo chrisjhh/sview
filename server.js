@@ -20,11 +20,22 @@ const cache = new FallbackCache(path.join(__dirname, 'server', 'cache'));
 strava.setCache(cache);
 
 // Try to connect to the running database
-const db = new Database();
-const db_connected = db.connected();
-if (db_connected) {
-  db.init();
-}
+let db = new Database({host:'postgres'});
+let db_connected = false;
+(async function() {
+  db_connected = await db.connected();
+  if (!db_connected) {
+    db = new Database({host:'localhost'});
+    db_connected = await db.connected();
+  }
+  if (db_connected) {
+    console.log(`Connected to postgres server ${db.configuration.host}:${db.configuration.port}`);
+    await db.init();
+  } else {
+    console.log('Could not connect to postgres database');
+  }
+})();
+
 
 
 // Start the server
