@@ -40,7 +40,8 @@ class App extends React.Component {
         </div>
         <div className="activities">
           <Stats stats={this.state.stats}/>
-          <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}/>
+          <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
+            moreActivities={this.moreActivities.bind(this)}/>
         </div>
       </div>
     );
@@ -59,6 +60,16 @@ class App extends React.Component {
 
   selectActivity(activityID) {
     this.setState({currentActivity: activityID});
+  }
+
+  moreActivities() {
+    const lastActivity = this.state.activities[this.state.activities.length - 1];
+    const lastTime = lastActivity.start_date;
+    const before = new Date(lastTime);
+    getActivities({before})
+      .then(data => this.setState(
+        {activities: this.state.activities.concat(data)}
+      ));
   }
 
 }

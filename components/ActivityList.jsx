@@ -14,13 +14,15 @@ const ActivityList = props => {
   return (
     <div className='activitylist'>
       {activities}
+      <a onClick={props.moreActivities}>More...</a>
     </div>
   );
 };
 
 ActivityList.propTypes = {
   activities: PropTypes.array,
-  selectActivity: PropTypes.func.isRequired
+  selectActivity: PropTypes.func.isRequired,
+  moreActivities: PropTypes.func.isRequired
 };
 
 export default ActivityList;

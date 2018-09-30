@@ -76,7 +76,7 @@ app.get('/api/v3/athlete', (req,res) => {
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athlete/activities', (req,res) => {
-  strava.getActivities(req.query.length ? req.query : null)
+  strava.getActivities(Object.keys(req.query).length ? req.query : null)
     .then(data => {
       if (db_connected) {
         db.updateRunData(data)
