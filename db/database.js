@@ -310,27 +310,29 @@ export class Database {
           // Create a new route for this run
           route_id = await this.createRoute(data);
         }
-        // Set the route id for this run
-        await this.qi.query(
-          'UPDATE runs SET route_id = $1 WHERE id = $2',
-          [route_id, id]
-        );
-        // Update the route with new average distance and elevation
-        await this.qi.query(
-          `UPDATE
-            routes 
-          SET 
-            (distance, elevation) = 
-            (SELECT 
-              avg(distance), avg(elevation)
-            FROM
-              runs
-            WHERE
-              route_id = $1
-            )
-          WHERE id = $1`,
-          [route_id]
-        );
+        if (route_id != null) {
+          // Set the route id for this run
+          await this.qi.query(
+            'UPDATE runs SET route_id = $1 WHERE id = $2',
+            [route_id, id]
+          );
+          // Update the route with new average distance and elevation
+          await this.qi.query(
+            `UPDATE
+              routes 
+            SET 
+              (distance, elevation) = 
+              (SELECT 
+                avg(distance), avg(elevation)
+              FROM
+                runs
+              WHERE
+                route_id = $1
+              )
+            WHERE id = $1`,
+            [route_id]
+          );
+        }
       }
     } catch(err) {
       await this.abortTransaction();
@@ -344,6 +346,9 @@ export class Database {
    * @param {Object} data 
    */
   findRoute(data) {
+    if (!data.distance || !data.start_latlng || !data.end_latlng) {
+      return Promise.resolve(null);
+    }
     return this.qi.query(
       `SELECT 
         id 
@@ -374,6 +379,9 @@ export class Database {
    * @param {Object} data The strava data for the run to use to create the route
    */
   createRoute(data) {
+    if (!data.distance || !data.start_latlng || !data.end_latlng) {
+      return Promise.resolve(null);
+    }
     return this.qi.query(
       `INSERT INTO 
         routes 
