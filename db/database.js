@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 
 const point = function(arr) {
+  if (arr == null) {
+    return null;
+  }
   return `(${arr[0]},${arr[1]})`;
 };
 
