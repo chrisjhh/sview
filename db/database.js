@@ -360,7 +360,7 @@ export class Database {
         elevation BETWEEN $5 AND $6`,
       [point(data.start_latlng),point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
-        (data.total_elevation_gain - 5), (data.total_elevation_gain + 5)
+        (data.total_elevation_gain - 7.5), (data.total_elevation_gain + 7.5)
       ]
     )
       .then(res => {
