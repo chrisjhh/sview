@@ -159,6 +159,7 @@ describe.only('Database', function() {
     let found = await db.findRoute(data[0]);
     expect(found).to.equal(id);
     data[0].distance -= 200;
+    const original_elevation = data[0].total_elevation_gain;
     data[0].total_elevation_gain -= 3;
     found = await db.findRoute(data[0]);
     expect(found).to.equal(id);
@@ -166,10 +167,11 @@ describe.only('Database', function() {
     found = await db.findRoute(data[0]);
     expect(found).to.be.null;
     data[0].distance += 200;
-    data[0].total_elevation_gain -= 3;
+    const elevation_change = Math.max(5,original_elevation*0.2);
+    data[0].total_elevation_gain -= elevation_change;
     found = await db.findRoute(data[0]);
     expect(found).to.be.null;
-    data[0].total_elevation_gain += 6;
+    data[0].total_elevation_gain += (elevation_change + 3);
     data[0].distance += 200;
     found = await db.findRoute(data[0]);
     expect(found).to.equal(id);

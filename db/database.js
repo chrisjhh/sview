@@ -351,16 +351,19 @@ export class Database {
     }
     return this.qi.query(
       `SELECT 
-        id 
+        id
       FROM routes 
       WHERE 
         start_latlng ~= $1 AND 
         end_latlng ~= $2 AND 
         distance BETWEEN $3 AND $4 AND
-        elevation BETWEEN $5 AND $6`,
+        elevation BETWEEN 
+          $5 - GREATEST(5, elevation * 0.2) 
+        AND 
+          $5 + GREATEST(5, elevation * 0.2)`,
       [point(data.start_latlng),point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
-        (data.total_elevation_gain - 7.5), (data.total_elevation_gain + 7.5)
+        data.total_elevation_gain
       ]
     )
       .then(res => {
