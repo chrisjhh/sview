@@ -368,7 +368,17 @@ export class Database {
     )
       .then(res => {
         if (res.rowCount > 1) {
-          throw new Error('More than one route matches run');
+          console.log('More than one route matches run', data.name, data.distance, data.total_elevation_gain);
+          let min_difference = null;
+          let best_match = null;
+          for (let row of res.rows) {
+            let diff = Math.abs(data.distance - row.distance);
+            if (min_difference === null || diff < min_difference) {
+              min_difference = diff;
+              best_match = row;
+            }
+          }
+          return best_match.id;
         }
         if (res.rowCount === 1) {
           return res.rows[0].id;
