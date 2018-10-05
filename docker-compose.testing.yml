@@ -3,3 +3,8 @@ services:
   pgdb:
     ports:
       - "5432:5432"
+
+# To enable testing
+# docker-compose -f ./docker-compose.yml -f ./docker-compose.testing.yml up -d
+# To disable again (but keep services running)
+# docker-compose up -d
