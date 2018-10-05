@@ -1,0 +1,5 @@
+version: '3'
+services:
+  pgdb:
+    ports:
+      - "5432:5432"
