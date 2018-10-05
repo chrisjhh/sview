@@ -3,6 +3,7 @@ const expect = chai.expect;
 
 import { Database } from '../db/database';
 import { getActivities } from '../lib/dev/test_strava';
+import { Routes } from '../lib/routes';
 
 let db = null;
 let data = null;
@@ -199,6 +200,18 @@ describe.only('Database', function() {
     await db.setRunAndRoute(data[1]);
     updatedRowData = await db.fetchRun(data[1]);
     expect(updatedRowData.id).to.equal(rowData.id);
+  });
+
+  it('routes', async function() {
+    const run = await db.fetchRun(data[1]);
+    expect(run.route_id).to.be.a('number');
+    const r = new Routes(db);
+    const route_id = await r.route(run.strava_id);
+    expect(route_id).to.equal(run.route_id);
+    const runs = await r.runs(route_id);
+    expect(runs).to.be.an('array');
+    let result = await db.updateRun(runs[0]);
+    expect(result).to.be.false;
   });
 
   after(async function() {
