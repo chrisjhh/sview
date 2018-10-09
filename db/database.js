@@ -351,7 +351,7 @@ export class Database {
     }
     return this.qi.query(
       `SELECT 
-        id
+        *
       FROM routes 
       WHERE 
         start_latlng ~= $1 AND 
@@ -369,6 +369,12 @@ export class Database {
       .then(res => {
         if (res.rowCount > 1) {
           console.log('More than one route matches run', data.name, data.distance, data.total_elevation_gain);
+          return this.mergeRoutes(res);
+        }
+        return res;
+      })
+      .then(res => {
+        if (res.rowCount > 1) {
           let min_difference = null;
           let best_match = null;
           for (let row of res.rows) {
@@ -385,6 +391,61 @@ export class Database {
         }
         return null;
       });
+  }
+
+  async mergeRoutes(res) {
+    let routes = Array.from(res.rows);
+    const merged_routes = [];
+    while(routes.length > 0) {
+      const first = routes.shift();
+      console.log('first',first);
+      merged_routes.push(first);
+      const remaining = Array.from(routes);
+      while (remaining.length > 0) {
+        const next = remaining.shift();
+        console.log('next',next); 
+        if (next.start_latlng.x === first.start_latlng.x &&
+            next.start_latlng.y === first.start_latlng.y &&
+            next.end_latlng.x === first.end_latlng.x &&
+            next.end_latlng.y === first.end_latlng.y &&
+            Math.abs(next.distance - first.distance) < 250 &&
+            Math.abs(next.elevation - first.elevation < 5)) {
+          console.log('Merging routes',first.id,next.id);
+          // Remove the route from the array being processed
+          routes = routes.filter(x => x.id !== next.id);
+          // Merge the routes in the database
+          await this.startTransaction();
+          await this.qi.query(
+            'UPDATE runs SET route_id = $1 WHERE route_id = $2',
+            [first.id,next.id]
+          );
+          await this.qi.query(
+            'DELETE FROM routes WHERE id = $1',
+            [next.id]
+          );
+          await this.qi.query(
+            `UPDATE
+              routes 
+            SET 
+              (distance, elevation) = 
+              (SELECT 
+                avg(distance), avg(elevation)
+              FROM
+                runs
+              WHERE
+                route_id = $1
+              )
+            WHERE id = $1`,
+            [first.id]
+          );
+          await this.endTransaction();
+        }
+      }
+    }
+    return {
+      rowCount: merged_routes.length,
+      rows: merged_routes
+    };
   }
 
   /**
