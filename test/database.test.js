@@ -202,7 +202,7 @@ describe.only('Database', function() {
     expect(updatedRowData.id).to.equal(rowData.id);
   });
 
-  it('routes', async function() {
+  it('routes.runs', async function() {
     const run = await db.fetchRun(data[1]);
     expect(run.route_id).to.be.a('number');
     const r = new Routes(db);
@@ -212,6 +212,27 @@ describe.only('Database', function() {
     expect(runs).to.be.an('array');
     let result = await db.updateRun(runs[0]);
     expect(result).to.be.false;
+  });
+
+  it('routes.stats', async function() {
+    const run = await db.fetchRun(data[1]);
+    expect(run.route_id).to.be.a('number');
+    const r = new Routes(db);
+    const stats = await r.stats(run.route_id,{date: run.start_time});
+    //console.log('stats',stats);
+    // Types
+    expect(stats).to.be.an('object');
+    expect(stats.count).to.be.a('number');
+    expect(stats.average).to.be.a('number');
+    expect(stats.recent).to.be.an('array');
+    expect(stats.pbs).to.be.an('array');
+    expect(stats.sbs).to.be.an('array');
+    // Values
+    expect(stats.count).to.equal(1);
+    expect(stats.average).to.equal(run.duration);
+    expect(stats.recent[0]).to.equal(run.duration);
+    expect(stats.pbs[0]).to.equal(run.duration);
+    expect(stats.sbs[0]).to.equal(run.duration);
   });
 
   after(async function() {
