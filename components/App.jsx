@@ -4,6 +4,7 @@ import { getActivities, getStats } from '../lib/cached_strava';
 import ActivityList from './ActivityList';
 import Stats from './Stats';
 import Map from './Map';
+import { ErrorBoundary } from './ErrorBoundary';
 
 let testing = true;
 let defaultActivities = null;
@@ -36,7 +37,9 @@ class App extends React.Component {
     return (
       <div>
         <div className="currentactivity">
-          <Map id={this.state.currentActivity}/>
+          <ErrorBoundary>
+            <Map id={this.state.currentActivity}/>
+          </ErrorBoundary>
         </div>
         <div className="activities">
           <Stats stats={this.state.stats}/>

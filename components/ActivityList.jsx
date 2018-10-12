@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Activity from './Activity';
+import { ErrorBoundary } from './ErrorBoundary';
 
 const ActivityList = props => {
   if (props.activities === null) {
@@ -9,7 +10,11 @@ const ActivityList = props => {
     );
   }
   const activities = props.activities.map(activity => 
-    <Activity activity={activity} key={activity.id} selectActivity={props.selectActivity}/>
+    (
+      <ErrorBoundary key={activity.id}>
+        <Activity activity={activity} key={activity.id} selectActivity={props.selectActivity}/>
+      </ErrorBoundary>
+    )
   );
   return (
     <div className='activitylist'>

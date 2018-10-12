@@ -131,6 +131,9 @@ class Map extends React.Component {
       //console.log('No streams');
       return null;
     }
+    if (!this.state.streams.filter) {
+      console.log('streams has no filter method', this.state.streams);
+    }
     const result = this.state.streams.filter(stream => stream.type === type);
     if (result.length !== 1) {
       //console.log(`Expected one ${type} stream`);
