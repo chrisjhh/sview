@@ -3,9 +3,10 @@
 // Allow console logs from server script
 /*eslint no-console: "off" */
 import * as strava from './lib/cached_strava';
-import { getTile, cachedGetTile } from './lib/mapbox';
+import { cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
 import { Database } from './db/database';
+import { Routes } from './lib/routes';
 
 const express = require('express');
 const path = require('path');
@@ -22,6 +23,7 @@ strava.setCache(cache);
 // Try to connect to the running database
 let db = new Database({host:'postgres'});
 let db_connected = false;
+let routes = null;
 (async function() {
   db_connected = await db.connected();
   if (!db_connected) {
@@ -31,6 +33,7 @@ let db_connected = false;
   if (db_connected) {
     console.log(`Connected to postgres server ${db.configuration.host}:${db.configuration.port}`);
     await db.init();
+    routes = new Routes(db);
   } else {
     console.log('Could not connect to postgres database');
   }
@@ -120,8 +123,19 @@ app.get('/api.tiles.mapbox.com/v4/:id/:z/:x/:y.png', (req,res) => {
     })
     .catch(err => {
       console.log(err);
-      res.status(500).send('Internal server error: ' + err)
+      res.status(500).send('Internal server error: ' + err);
     });
+});
+
+// Routes
+app.get('/api/routes/:id/stats', (req,res) => {
+  if (!routes) {
+    return res.sendStatus(404);
+  }
+  routes.route(Number(req.params.id))
+    .then(route_id => routes.stats(route_id, req.query))
+    .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
 //?? Cache some stuff we might need
