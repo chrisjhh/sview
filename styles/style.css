@@ -273,6 +273,39 @@
   cursor: default;
 }
 
+.award {
+  padding-right: 0px;
+}
+
+.award.slower:after {
+  content: '⬇';
+  color: red;
+}
+
+.award.faster:after {
+  content: '⬆';
+  color: green;
+}
+
+.award.pb.first:after {
+  content: '🏆';
+}
+
+.award.pb.second:after {
+  content: '★';
+  color: silver;
+}
+
+.award.pb.third:after {
+  content: '★';
+  color: brown;
+}
+
+.award.sb.first:after {
+  content: '★';
+  color: blue;
+}
+
 
 
 
