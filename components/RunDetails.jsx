@@ -68,12 +68,14 @@ class RunDetails extends React.Component  {
       return null;
     }
     const ordinals = ['first','second','third'];
+    const pb_titles = ['Personal Best!', 'Second-best time!', 'Third-best time!'];
+    const sb_titles = ['Best time this year!', 'Second-best time this year!', 'Third-best time this year!'];
     // Is this a PB?
     if (this.state.stats.pbs && this.state.stats.pbs.length >= 3) {
       for(let i=0; i<3; ++i) {
         if (this.props.activity.elapsed_time == this.state.stats.pbs[i]) {
           return (
-            <span className={'award pb ' + ordinals[i]}></span>
+            <span className={'award pb ' + ordinals[i]} title={pb_titles[i]}></span>
           );
         }
       }
@@ -83,7 +85,7 @@ class RunDetails extends React.Component  {
       for(let i=0; i<3; ++i) {
         if (this.props.activity.elapsed_time == this.state.stats.sbs[i]) {
           return (
-            <span className={'award sb ' + ordinals[i]}></span>
+            <span className={'award sb ' + ordinals[i]} title={sb_titles[i]}></span>
           );
         }
       }
@@ -97,12 +99,12 @@ class RunDetails extends React.Component  {
       const tol = 10 * miles;
       if (this.props.activity.elapsed_time < average - tol) {
         return (
-          <span className="award faster"></span>
+          <span className="award faster" title="Faster than recent average."></span>
         );
       }
       if (this.props.activity.elapsed_time > average + tol) {
         return (
-          <span className="award slower"></span>
+          <span className="award slower" title="Slower than recent average."></span>
         );
       }
     }
