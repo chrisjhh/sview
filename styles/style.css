@@ -293,7 +293,7 @@
 
 .award.pb.second:after {
   content: '★';
-  color: silver;
+  color: darkgray;
 }
 
 .award.pb.third:after {
@@ -302,7 +302,17 @@
 }
 
 .award.sb.first:after {
-  content: '★';
+  content: '①';
+  color: blue;
+}
+
+.award.sb.second:after {
+  content: '②';
+  color: blue;
+}
+
+.award.sb.third:after {
+  content: '③';
   color: blue;
 }
 
