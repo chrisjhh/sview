@@ -3,6 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
+import { Graph } from '../lib/graph';
 
 // Allow console log messages for now
 /*eslint no-console: off*/
@@ -37,6 +38,7 @@ class Map extends React.Component {
   }
 
   componentDidMount()  {
+    // Create map
     this.map = L.map('mapid');
     let mapurl = 'https://api.tiles.mapbox.com/v4';
     // Check if we are running on local server with its own cache
@@ -55,6 +57,8 @@ class Map extends React.Component {
     if (this.state.id != null) {
       this.loadStreams();
     }
+    // Create graph
+    this.graph = new Graph('graph');
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -65,8 +69,13 @@ class Map extends React.Component {
     if (this.state.id !== prevState.id) {
       this.loadStreams();
     } else if (this.state.view !== prevState.view) {
-      this.updateMap();
+      this.updateAll();
     } 
+  }
+
+  updateAll() {
+    this.updateMap();
+    this.updateGraph();
   }
 
   render() {
@@ -106,6 +115,7 @@ class Map extends React.Component {
         <div className="mapoptions">
           {controls}
         </div>
+        <canvas id="graph"></canvas>
       </div>
     );
   }
@@ -119,7 +129,7 @@ class Map extends React.Component {
       .then(data => {
         this.setState({streams: data});
         this.fitBounds();
-        this.updateMap();
+        this.updateAll();
       })
       .catch(err => 
         console.log('Streams failed to load', err)
@@ -175,6 +185,71 @@ class Map extends React.Component {
       default:
         console.log('Unknown view option:', this.view);
         this.displayRoute();
+    }
+  }
+
+  getPaceData() {
+    const distance = this.getStream('distance');
+    const time = this.getStream('time');
+    if (!distance || !time) {
+      return null;
+    }
+    const pace = distance.data.map((curr,index) => {
+      let j = index - 40;
+      if (j < 0) {
+        j = 0;
+      }
+      let i = index;
+      if (i < 40) {
+        i = 40; 
+      }
+      let t = time.data[i] - time.data[j];
+      let d = distance.data[i] - distance.data[j];
+      let p = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
+      return p;
+    });
+    return pace;
+  }
+
+  updateGraph() {
+    this.graph.clear();
+    let xdata = this.getStream('time');
+    let ydata = null;
+    switch (this.state.view) {
+      case 'route': 
+        ydata = this.getStream('distance');
+        break;
+      case 'hr':
+        ydata = this.getStream('heartrate');
+        break;
+      case 'cadence':
+        ydata = this.getStream('cadence');
+        break;
+      case 'pace':
+        xdata = this.getStream('distance');
+        ydata = this.getPaceData();
+        break;
+      case 'efficiency':
+        xdata = this.getStream('distance');
+        ydata = this.getPaceData();
+        if (ydata) {
+          const hr = this.getStream('heartrate');
+          ydata = hr ? ydata.map((curr,i) => curr * hr.data[i]) : null;
+        }
+        break;
+      case 'inclination':
+        xdata = this.getStream('distance');
+        ydata = this.getStream('altitude');
+        break;
+      default:
+        console.log('Unknown view option:', this.view);
+    }
+    this.graph.setXData((xdata && xdata.data) ? xdata.data : xdata);
+    this.graph.setYData((ydata && ydata.data) ? ydata.data : ydata);
+    try {
+      this.graph.draw();
+    } catch(err) {
+      console.log(err);
     }
   }
 
