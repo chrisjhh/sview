@@ -115,7 +115,7 @@ class Map extends React.Component {
         <div className="mapoptions">
           {controls}
         </div>
-        <canvas id="graph"></canvas>
+        <canvas id="graph" width="600" height="150"></canvas>
       </div>
     );
   }
