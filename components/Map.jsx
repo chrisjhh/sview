@@ -188,20 +188,20 @@ class Map extends React.Component {
     }
   }
 
-  getPaceData() {
+  getPaceData(span = 40) {
     const distance = this.getStream('distance');
     const time = this.getStream('time');
     if (!distance || !time) {
       return null;
     }
     const pace = distance.data.map((curr,index) => {
-      let j = index - 40;
+      let j = index - span;
       if (j < 0) {
         j = 0;
       }
       let i = index;
-      if (i < 40) {
-        i = 40; 
+      if (i < span) {
+        i = span; 
       }
       let t = time.data[i] - time.data[j];
       let d = distance.data[i] - distance.data[j];
@@ -211,10 +211,51 @@ class Map extends React.Component {
     return pace;
   }
 
+  getIntervals() {
+    const timeStream = this.getStream('time');
+    const distanceStream = this.getStream('distance');
+    let intervals = [];
+    if (!timeStream || !distanceStream) {
+      return null;
+    }
+    const paceData = this.getPaceData(20);
+    let intervalStart = null;
+    for (let i = 0; i< paceData.length; ++i) {
+      const pace = paceData[i];
+      if (intervalStart === null) {
+        // Check if interval has started
+        if (pace < 7.25) {
+          intervalStart = i;
+        }
+      } else {
+        // Check if interval has ended
+        if (pace > 8.5 || i === paceData.length - 1) {
+          const start_time = timeStream.data[intervalStart];
+          const end_time = timeStream.data[i];
+          const distance = distanceStream.data[i] - distanceStream.data[intervalStart];
+          const time = timeStream.data[i] - timeStream.data[intervalStart];
+          const average_pace = (time / 60) / (distance / 1609.34);
+          const interval = {start_time,end_time,distance,time,average_pace};
+          if (distance > 50 && distance < 1500 && average_pace < 7.25) {
+            intervals.push(interval);
+          }
+          intervalStart = null;
+        }
+      }
+    }
+    return intervals.length ? intervals : null;
+  }
+
   updateGraph() {
     this.graph.clear();
     let xdata = this.getStream('time');
     let ydata = null;
+    const intervals = this.getIntervals();
+    console.log('intervals',intervals);
+    let span = undefined;
+    if (intervals && intervals.length > 3) {
+      span = 20;
+    }
     switch (this.state.view) {
       case 'route': 
         ydata = this.getStream('distance');
@@ -227,11 +268,11 @@ class Map extends React.Component {
         break;
       case 'pace':
         xdata = this.getStream('distance');
-        ydata = this.getPaceData();
+        ydata = this.getPaceData(span).map(a => -a);
         break;
       case 'efficiency':
         xdata = this.getStream('distance');
-        ydata = this.getPaceData();
+        ydata = this.getPaceData(span).map(a => -a);
         if (ydata) {
           const hr = this.getStream('heartrate');
           ydata = hr ? ydata.map((curr,i) => curr * hr.data[i]) : null;
