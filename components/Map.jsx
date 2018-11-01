@@ -287,6 +287,15 @@ class Map extends React.Component {
     }
     this.graph.setXData((xdata && xdata.data) ? xdata.data : xdata);
     this.graph.setYData((ydata && ydata.data) ? ydata.data : ydata);
+    // Set limits
+    switch (this.state.view) {
+      case 'cadence':
+        this.graph.min_y = Math.max(this.graph.min_y, 60);
+        break;
+      case 'pace':
+        this.graph.min_y = Math.max(this.graph.min_y, -12);
+        break;
+    }
     try {
       this.graph.draw();
     } catch(err) {
