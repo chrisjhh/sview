@@ -27,9 +27,8 @@ describe.only('DB1.0', function() {
       await db.updateRunData(data);
     } else {
       await db.create();
-      await db.startTransaction();
       await db._execSQL('db1.0.sql');
-      await db.endTransaction();
+      // A reconnect seems necessary here!
       db.disconnect();
       db = new Database({database: 'running_1_0'});
     }
