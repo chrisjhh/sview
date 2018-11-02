@@ -598,6 +598,7 @@ export class Database {
         await this._execSQL('weather.sql');
         await this.setProperty('version', '1.1');
         await this.endTransaction();
+        console.log('Updated running database to version 1.1');
         break;
       case '1.1':
         // This is the current version
