@@ -50,7 +50,7 @@ describe.only('DB1.0', function() {
   after(async function() {
     if (connected) {
       await db.disconnect();
-      //await db.drop();
+      await db.drop();
     }
   });
 });

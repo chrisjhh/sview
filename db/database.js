@@ -593,11 +593,11 @@ export class Database {
         // We need to create the weather table
         // (First we need a unique conmstraint so strava id can be
         // used as foreign key)
-        this.startTransaction();
-        this._execSQL('run_unique_strava_id.sql');
-        this._execSQL('weather.sql');
-        this.setProperty('version', '1.1');
-        this.endTransaction();
+        await this.startTransaction();
+        await this._execSQL('run_unique_strava_id.sql');
+        await this._execSQL('weather.sql');
+        await this.setProperty('version', '1.1');
+        await this.endTransaction();
         break;
       case '1.1':
         // This is the current version
