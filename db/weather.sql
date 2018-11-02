@@ -5,7 +5,7 @@
 CREATE TABLE public.weather
 (
     id serial NOT NULL,
-    run_id integer NOT NULL,
+    strava_id bigint NOT NULL,
     "timestamp" timestamp with time zone NOT NULL,
     city character varying(60) COLLATE pg_catalog."default",
     wind_speed real,
@@ -23,9 +23,9 @@ CREATE TABLE public.weather
     sea_level_pressure real,
     uv real,
     CONSTRAINT weather_pkey PRIMARY KEY (id),
-    CONSTRAINT weather_unique_run_timestamp UNIQUE (run_id, "timestamp"),
-    CONSTRAINT weather_run_id_fkey FOREIGN KEY (run_id)
-        REFERENCES public.runs (id) MATCH SIMPLE
+    CONSTRAINT weather_unique_run_timestamp UNIQUE (strava_id, "timestamp"),
+    CONSTRAINT weather_run_strava_id_fkey FOREIGN KEY (strava_id)
+        REFERENCES public.runs (strava_id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 )
@@ -41,7 +41,7 @@ ALTER TABLE public.weather
 
 -- DROP INDEX public.fki_weather_run_id_fkey;
 
-CREATE INDEX fki_weather_run_id_fkey
+CREATE INDEX fki_weather_strava_id_fkey
     ON public.weather USING btree
-    (run_id)
+    (strava_id)
     TABLESPACE pg_default;

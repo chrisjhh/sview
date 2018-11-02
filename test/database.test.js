@@ -28,7 +28,7 @@ describe.only('Database', function() {
 
   it('should report version', async function() {
     let version = await db.version();
-    expect(version).to.equal('1.0');
+    expect(version).to.equal('1.1');
   });
 
   it('should be able to add run', async function() {
