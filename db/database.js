@@ -144,8 +144,8 @@ export class Database {
    * Creates the database
    */
   create(db = this.configuration.database) {
-    if (!/^[a-z_]+$/.test(db)) {
-      throw new Error('Invalid database name');
+    if (!/^[a-z0-9_]+$/.test(db)) {
+      throw new Error(`Invalid database name: ${db}`);
     }
     let config = {...this.configuration};
     config.database = 'postgres';
@@ -175,7 +175,7 @@ export class Database {
     if (['running', 'postgres'].includes(db)) {
       throw new Error('Trying to drop main database');
     }
-    if (!/^[a-z_]+$/.test(db)) {
+    if (!/^[a-z0-9_]+$/.test(db)) {
       throw new Error('Invalid database name');
     }
     let config = {...this.configuration};
@@ -298,6 +298,7 @@ export class Database {
    * @param {Object} data The strava data for the run to set
    */
   async setRunAndRoute(data) {
+    //console.log('setRunAndRoute');
     await this.startTransaction();
     try {
       const updated = await this.updateRun(data);
@@ -346,6 +347,7 @@ export class Database {
    * @param {Object} data 
    */
   findRoute(data) {
+    //console.log('findRoute');
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
     }
@@ -394,6 +396,7 @@ export class Database {
   }
 
   async mergeRoutes(res) {
+    //console.log('mergeRoutes');
     let routes = Array.from(res.rows);
     const merged_routes = [];
     while(routes.length > 0) {
@@ -453,6 +456,7 @@ export class Database {
    * @param {Object} data The strava data for the run to use to create the route
    */
   createRoute(data) {
+    //console.log('createRoute');
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
     }
@@ -528,6 +532,7 @@ export class Database {
 
 
   startTransaction() {
+    //console.log('startTransaction');
     if (this.qi !== this.pool) {
       // Transaction already in progress. Use savepoint
       if (this.savepoint) {
@@ -544,6 +549,7 @@ export class Database {
   }
 
   abortTransaction() {
+    //console.log('abortTransaction');
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
@@ -562,6 +568,7 @@ export class Database {
   }
 
   endTransaction() {
+    //console.log('endTransaction');
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
