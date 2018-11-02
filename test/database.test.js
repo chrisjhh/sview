@@ -235,6 +235,31 @@ describe.only('Database', function() {
     expect(stats.sbs[0]).to.equal(run.duration);
   });
 
+  it('weather data', async function() {
+    const strava_id = data[0].id;
+    //console.log(data[0]);
+    const timestamp = data[0].start_date;
+    const temperature = 20.0;
+    const dew_point = 3.0;
+    const wind_speed = 4.2;
+    const weather = {strava_id, timestamp, temperature,
+      dew_point, wind_speed};
+    
+    const id = await db.addWeather(strava_id, weather);
+    expect(id).to.be.a('number');
+    
+    const rows = await db.getWeather(strava_id);
+    expect(rows).to.not.be.null;
+    expect(rows).to.be.an('array');
+    expect(rows.length).to.be.equal(1);
+    expect(rows[0].id).to.be.equal(id);
+    expect(rows[0].strava_id).to.be.equal(strava_id);
+    expect(rows[0].timestamp.toISOString()).to.be.equal(new Date(timestamp).toISOString());
+    expect(rows[0].temperature).to.be.equal(temperature);
+    expect(rows[0].dew_point).to.be.equal(dew_point);
+    expect(rows[0].wind_speed).to.be.equal(wind_speed);
+  });
+
   after(async function() {
     if (connected) {
       await db.disconnect();

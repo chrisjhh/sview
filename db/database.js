@@ -452,6 +452,61 @@ export class Database {
   }
 
   /**
+   * Add weather values associated with a run
+   * @param {*} strava_id The strava_id of the run
+   * @param {*} data The weather data to add. Must have timestamp
+   * @returns {Number} id of row inserted
+   */
+  addWeather(strava_id, data) {
+    return this.qi.query(
+      `INSERT INTO weather (strava_id, timestamp, city,
+        wind_speed, wind_direction, humidity, dew_point,
+        pressure, snow, precipitation, temperature,
+        cloud_coverage, solar_elevation, solar_azimuth,
+        visibility,sea_level_pressure,uv
+        )
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
+          $12,$13,$14,$15,$16,$17)
+        RETURNING id`,
+      [strava_id, data.timestamp, data.city, data.wind_speed,
+        data.wind_direction, data.humidity, data.dew_point,
+        data.pressure, data.snow, data.precipitation,
+        data.temperature, data.cloud_coverage,
+        data.solar_elevation, data.solar_azimuth,
+        data.visibility, data.sea_level_pressure,
+        data.uv
+      ]
+    )
+      .then(res => {
+        if (res.rowCount === 1) {
+          return res.rows[0].id;
+        }
+        return null;
+      });
+  }
+
+  /**
+   * Get the weather data associated with a run
+   * @param {Number} strava_id The strava id of the run 
+   * @returns {Array|null} Array of timestamped weather data, or null if no data
+   */
+  getWeather(strava_id) {
+    return this.qi.query(
+      'SELECT * FROM weather WHERE strava_id = $1',
+      [strava_id]
+    )
+      .then(res => {
+        if (res.rowCount > 0) {
+          return res.rows.map(x => {
+            x.strava_id = Number(x.strava_id);
+            return x;
+          });
+        }
+        return null;
+      });
+  }
+
+  /**
    * Create a route from a run
    * @param {Object} data The strava data for the run to use to create the route
    */
