@@ -491,7 +491,8 @@ export class Database {
       await this._execSQL('properties.sql');
       await this._execSQL('routes.sql');
       await this._execSQL('runs.sql');
-      await this.qi.query('INSERT INTO properties (key,value) values (\'version\',\'1.0\')');
+      await this._execSQL('weather.sql');
+      await this.qi.query('INSERT INTO properties (key,value) values (\'version\',\'1.1\')');
     } catch(err) {
       await this.abortTransaction();
       throw err;
@@ -582,6 +583,16 @@ export class Database {
     const version = await this.version();
     switch (version) {
       case '1.0':
+        // We need to create the weather table
+        // (First we need a unique conmstraint so strava id can be
+        // used as foreign key)
+        this.startTransaction();
+        this._execSQL('run_unique_strava_id.sql');
+        this._execSQL('weather.sql');
+        this.setProperty('version', '1.1');
+        this.endTransaction();
+        break;
+      case '1.1':
         // This is the current version
         // Everything is OK
         break;

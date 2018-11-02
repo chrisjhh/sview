@@ -20,8 +20,8 @@ CREATE TABLE public.runs
     strava_id bigint,
     moving_time real,
     CONSTRAINT runs_pkey PRIMARY KEY (id),
-    CONSTRAINT run_unique_start_time UNIQUE (start_time)
-,
+    CONSTRAINT run_unique_start_time UNIQUE (start_time),
+    CONSTRAINT run_unique_strava_id UNIQUE (strava_id),
     CONSTRAINT run_route_id_fkey FOREIGN KEY (route_id)
         REFERENCES public.routes (id) MATCH SIMPLE
         ON UPDATE NO ACTION
