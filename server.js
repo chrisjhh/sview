@@ -7,6 +7,7 @@ import { cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
 import { Database } from './db/database';
 import { Routes } from './lib/routes';
+import { getWeather } from './lib/weather';
 
 const express = require('express');
 const path = require('path');
@@ -136,6 +137,15 @@ app.get('/api/routes/:id/stats', (req,res) => {
     .then(route_id => routes.stats(route_id, req.query))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+
+// Weather
+app.get('/api/weather/:id', (req,res) => {
+  if (!db_connected) {
+    return res.sendStatus(404);
+  }
+  getWeather(db,Number(req.params.id))
+    .then(res.json);
 });
 
 //?? Cache some stuff we might need

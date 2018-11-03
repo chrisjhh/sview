@@ -245,6 +245,32 @@ export class Database {
       });
   }
 
+  fetchRunByStravaID(strava_id) {
+    return this.qi.query(
+      'SELECT * FROM runs WHERE strava_id = $1 LIMIT 1',
+      [Number(strava_id)]
+    )
+      .then(res => {
+        if (res.rowCount === 1) {
+          return res.rows[0];
+        }
+        return null;
+      });
+  }
+
+  fetchRunByID(id) {
+    return this.qi.query(
+      'SELECT * FROM runs WHERE id = $1 LIMIT 1',
+      [Number(id)]
+    )
+      .then(res => {
+        if (res.rowCount === 1) {
+          return res.rows[0];
+        }
+        return null;
+      });
+  }
+
   /**
    * Update a run in the database
    * Does nothing if the run does not need updating
