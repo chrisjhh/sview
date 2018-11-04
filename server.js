@@ -145,7 +145,8 @@ app.get('/api/weather/:id', (req,res) => {
     return res.sendStatus(404);
   }
   getWeather(db,Number(req.params.id))
-    .then(res.json);
+    .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
 //?? Cache some stuff we might need
