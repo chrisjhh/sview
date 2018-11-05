@@ -125,7 +125,7 @@ class RunDetails extends React.Component  {
     if (this.state.weather[0].solar_elevation && 
         this.state.weather[0].solar_elevation < -6) {
       night = (
-        <span className="night"></span>
+        <span className="night" title="Night time."></span>
       );
     }
     return (
