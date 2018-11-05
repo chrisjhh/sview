@@ -56,6 +56,15 @@
   background-color: red;
 }
 
+.weather .night {
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+  vertical-align: middle;
+  margin-left: 4px;
+  background: url("../img/night.svg") 0px 0px/12px no-repeat;
+}
+
 .activity .contents {
   display: inline-block;
   margin-left: 5px;

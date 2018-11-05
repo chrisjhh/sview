@@ -121,10 +121,18 @@ class RunDetails extends React.Component  {
     if (!this.state.weather) {
       return null;
     }
+    let night = null;
+    if (this.state.weather[0].solar_elevation && 
+        this.state.weather[0].solar_elevation < -6) {
+      night = (
+        <span className="night"></span>
+      );
+    }
     return (
       <span className="weather">
         {this.state.weather[0].temperature}
         <span className="units">°C</span>
+        { night }
       </span>
     );
   }
