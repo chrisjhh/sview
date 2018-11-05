@@ -5,7 +5,7 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
 import HBPerMile from './HBPerMile';
-import { getStats } from '../lib/localhost';
+import { getStats, getWeather } from '../lib/localhost';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -26,7 +26,8 @@ class RunDetails extends React.Component  {
   constructor(props) {
     super(props);
     this.state = {
-      stats: null
+      stats: null,
+      weather: null
     };
   }
 
@@ -49,6 +50,7 @@ class RunDetails extends React.Component  {
         <XPoints activity={this.props.activity}/>
         <VDot activity={this.props.activity}/>
         <HBPerMile activity={this.props.activity}/>
+        { this.weather() }
       </span>
     );
   }
@@ -59,6 +61,9 @@ class RunDetails extends React.Component  {
         Number(location.port) !== 80) {
       getStats(this.props.activity.id, {date: this.props.activity.start_date_local})
         .then(stats => this.setState({stats}))
+        .catch(err => console.log(err));
+      getWeather(this.props.activity.id)
+        .then(weather => this.setState({weather}))
         .catch(err => console.log(err));
     }
   }
@@ -110,6 +115,18 @@ class RunDetails extends React.Component  {
     }
     // Nothing of note
     return null; 
+  }
+
+  weather() {
+    if (!this.state.weather) {
+      return null;
+    }
+    return (
+      <span className="weather">
+        {this.state.weather[0].temperature}
+        <span className="units">°C</span>
+      </span>
+    );
   }
   
 }
