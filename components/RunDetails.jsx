@@ -125,14 +125,32 @@ class RunDetails extends React.Component  {
     if (this.state.weather[0].solar_elevation && 
         this.state.weather[0].solar_elevation < -6) {
       night = (
-        <span className="night" title="Night time."></span>
+        <span className="icon night" title="Night time."></span>
       );
+    }
+    let rain = null;
+    const precipitation = this.state.weather[0].precipitation;
+    if (precipitation && precipitation > 0) {
+      if (precipitation < 2.5) {
+        rain = (
+          <span className="icon rain light" title="Light rain."></span>
+        );
+      } else if (precipitation < 7.6) {
+        rain = (
+          <span className="icon rain moderate" title="Moderate rain."></span>
+        );
+      } else {
+        rain = (
+          <span className="icon rain heavy" title="Heavy rain."></span>
+        );
+      }
     }
     return (
       <span className="weather">
         {this.state.weather[0].temperature}
         <span className="units">°C</span>
         { night }
+        { rain }
       </span>
     );
   }
