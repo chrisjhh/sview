@@ -386,9 +386,9 @@ export class Database {
         end_latlng ~= $2 AND 
         distance BETWEEN $3 AND $4 AND
         elevation BETWEEN 
-          $5 - GREATEST(5, elevation * 0.2) 
+          $5 - (5 + elevation * 0.2) 
         AND 
-          $5 + GREATEST(5, elevation * 0.2)`,
+          $5 + (5 + elevation * 0.2)`,
       [point(data.start_latlng),point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
         data.total_elevation_gain
@@ -438,7 +438,7 @@ export class Database {
             next.end_latlng.x === first.end_latlng.x &&
             next.end_latlng.y === first.end_latlng.y &&
             Math.abs(next.distance - first.distance) < 250 &&
-            Math.abs(next.elevation - first.elevation < 5)) {
+            Math.abs(next.elevation - first.elevation) < 5 + first.elevation * 0.2) {
           console.log('Merging routes',first.id,next.id);
           // Remove the route from the array being processed
           routes = routes.filter(x => x.id !== next.id);
