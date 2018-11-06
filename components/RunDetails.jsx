@@ -126,11 +126,11 @@ class RunDetails extends React.Component  {
     if (temp) {
       if (temp < 5) {
         cold = (
-          <span className="icon cold" title="Cold."></span>
+          <span className="icon cold" title="Cold"></span>
         );
       } else if (temp > 20) {
         cold = (
-          <span className="icon hot" title="Hot."></span>
+          <span className="icon hot" title="Hot"></span>
         );
       }
     }
@@ -138,7 +138,7 @@ class RunDetails extends React.Component  {
     if (this.state.weather[0].solar_elevation && 
         this.state.weather[0].solar_elevation < -6) {
       night = (
-        <span className="icon night" title="Night time."></span>
+        <span className="icon night" title="Dark"></span>
       );
     }
     let rain = null;
@@ -146,15 +146,15 @@ class RunDetails extends React.Component  {
     if (precipitation && precipitation > 0) {
       if (precipitation < 2.5) {
         rain = (
-          <span className="icon rain light" title="Light rain."></span>
+          <span className="icon rain light" title="Light rain"></span>
         );
       } else if (precipitation < 7.6) {
         rain = (
-          <span className="icon rain moderate" title="Moderate rain."></span>
+          <span className="icon rain moderate" title="Rain"></span>
         );
       } else {
         rain = (
-          <span className="icon rain heavy" title="Heavy rain."></span>
+          <span className="icon rain heavy" title="Heavy rain"></span>
         );
       }
     }
