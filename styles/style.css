@@ -61,7 +61,10 @@
   height: 14px;
   width: 14px;
   vertical-align: middle;
-  margin-left: 4px;
+}
+
+.weather .units {
+  margin-right: 4px;
 }
 
 .weather .night {
@@ -81,15 +84,15 @@
 }
 
 .weather .wind {
-  background: url("../img/wind.png") 0px 0px/12px no-repeat;
+  background: url("../img/wind.png") 0px 0px/14px no-repeat;
 }
 
 .weather .cold {
-  background: url("../img/cold.png") 0px 0px/12px no-repeat;
+  background: url("../img/cold.png") 0px -2px/16px no-repeat;
 }
 
 .weather .hot {
-  background: url("../img/hot.png") 0px 0px/12px no-repeat;
+  background: url("../img/hot.png") 0px 0px/14px no-repeat;
 }
 
 .activity .contents {
