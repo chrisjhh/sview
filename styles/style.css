@@ -80,6 +80,18 @@
   background: url("../img/heavy_rain.png") 0px 0px/12px no-repeat;
 }
 
+.weather .wind {
+  background: url("../img/wind.png") 0px 0px/12px no-repeat;
+}
+
+.weather .cold {
+  background: url("../img/cold.png") 0px 0px/12px no-repeat;
+}
+
+.weather .hot {
+  background: url("../img/hot.png") 0px 0px/12px no-repeat;
+}
+
 .activity .contents {
   display: inline-block;
   margin-left: 5px;

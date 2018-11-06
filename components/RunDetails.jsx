@@ -121,6 +121,19 @@ class RunDetails extends React.Component  {
     if (!this.state.weather) {
       return null;
     }
+    let cold = null;
+    let temp = this.state.weather[0].temperature;
+    if (temp) {
+      if (temp < 5) {
+        cold = (
+          <span className="icon cold" title="Cold."></span>
+        );
+      } else if (temp > 20) {
+        cold = (
+          <span className="icon hot" title="Hot."></span>
+        );
+      }
+    }
     let night = null;
     if (this.state.weather[0].solar_elevation && 
         this.state.weather[0].solar_elevation < -6) {
@@ -145,12 +158,21 @@ class RunDetails extends React.Component  {
         );
       }
     }
+    let wind = null;
+    const windspeed = this.state.weather[0].wind_speed;
+    if (windspeed && windspeed > 5.5) {
+      wind = (
+        <span className="icon wind" title="Windy"></span>
+      );
+    }
     return (
       <span className="weather">
         {this.state.weather[0].temperature}
         <span className="units">°C</span>
+        { cold }
         { night }
         { rain }
+        { wind }
       </span>
     );
   }
