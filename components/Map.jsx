@@ -76,6 +76,33 @@ const paceColor = function(pace) {
   return colorchart[15];
 };
 
+const hrColor = function(bpm) {
+  const rest = 54;
+  const max = 188;
+  const reserve = max - rest;
+  const z1 = rest + 0.5 * reserve;
+  const z2 = rest + 0.75 * reserve;
+  const z3 = rest + 0.85 * reserve;
+  const z4 = rest + 0.9 * reserve;
+  const z5 = rest + 0.95 * reserve;
+  if (bpm < z1) {
+    return '#0040ff';
+  }
+  if (bpm < z2) {
+    return '#00ffff';
+  }
+  if (bpm < z3) {
+    return '#40ff00';
+  }
+  if (bpm < z4) {
+    return '#ffff00';
+  }
+  if (bpm < z5) {
+    return '#ff8000';
+  }
+  return '#ff0000';
+};
+
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -351,6 +378,9 @@ class Map extends React.Component {
         case 'pace':
           this.graph.colourGraph((pace) => paceColor(-pace),0.4);
           break;
+        case 'hr':
+          this.graph.colourGraph(hrColor,0);
+          break;
       }
       this.graph.draw();
     } catch(err) {
@@ -372,36 +402,11 @@ class Map extends React.Component {
     if (!latlng || !hr) {
       return;
     }
-    const rest = 54;
-    const max = 188;
-    const reserve = max - rest;
-    const z1 = rest + 0.5 * reserve;
-    const z2 = rest + 0.75 * reserve;
-    const z3 = rest + 0.85 * reserve;
-    const z4 = rest + 0.9 * reserve;
-    const z5 = rest + 0.95 * reserve;
-    const color = function(bpm) {
-      if (bpm < z1) {
-        return '#0040ff';
-      }
-      if (bpm < z2) {
-        return '#00ffff';
-      }
-      if (bpm < z3) {
-        return '#40ff00';
-      }
-      if (bpm < z4) {
-        return '#ffff00';
-      }
-      if (bpm < z5) {
-        return '#ff8000';
-      }
-      return '#ff0000';
-    };
+    
     let datapoints = [];
     let col = null;
     for (let i=0; i<latlng.data.length; ++i) {
-      let icol = color(hr.data[i]);
+      let icol = hrColor(hr.data[i]);
       if (icol === col) {
         datapoints.push(latlng.data[i]);
       } else {
