@@ -27,6 +27,55 @@ const colorchart = [
   '#ffffff', // 15 - white
 ];
 
+const paceColor = function(pace) {
+  if (pace > 12) {
+    return colorchart[0];
+  }
+  if (pace > 11) {
+    return colorchart[1];
+  }
+  if (pace > 10) {
+    return colorchart[2];
+  }
+  if (pace > 9.5) {
+    return colorchart[3];
+  }
+  if (pace > 9) {
+    return colorchart[4];
+  }
+  if (pace > 8.5) {
+    return colorchart[5];
+  }
+  if (pace > 8) {
+    return colorchart[6];
+  }
+  if (pace > 7.5) {
+    return colorchart[7];
+  }
+  if (pace > 7) {
+    return colorchart[8];
+  }
+  if (pace > 6.5) {
+    return colorchart[9];
+  }
+  if (pace > 6) {
+    return colorchart[10];
+  }
+  if (pace > 5.5) {
+    return colorchart[11];
+  }
+  if (pace > 5) {
+    return colorchart[12];
+  }
+  if (pace > 4.5) {
+    return colorchart[13];
+  }
+  if (pace > 4) {
+    return colorchart[14];
+  }
+  return colorchart[15];
+};
+
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -296,7 +345,13 @@ class Map extends React.Component {
         this.graph.min_y = Math.max(this.graph.min_y, -12);
         break;
     }
+    // Draw coulour sections under graph
     try {
+      switch (this.state.view) {
+        case 'pace':
+          this.graph.colourGraph((pace) => paceColor(-pace),0.4);
+          break;
+      }
       this.graph.draw();
     } catch(err) {
       console.log(err);
@@ -434,54 +489,7 @@ class Map extends React.Component {
     if (!latlng || !distance || !time) {
       return;
     }
-    const color = function(pace) {
-      if (pace > 12) {
-        return colorchart[0];
-      }
-      if (pace > 11) {
-        return colorchart[1];
-      }
-      if (pace > 10) {
-        return colorchart[2];
-      }
-      if (pace > 9.5) {
-        return colorchart[3];
-      }
-      if (pace > 9) {
-        return colorchart[4];
-      }
-      if (pace > 8.5) {
-        return colorchart[5];
-      }
-      if (pace > 8) {
-        return colorchart[6];
-      }
-      if (pace > 7.5) {
-        return colorchart[7];
-      }
-      if (pace > 7) {
-        return colorchart[8];
-      }
-      if (pace > 6.5) {
-        return colorchart[9];
-      }
-      if (pace > 6) {
-        return colorchart[10];
-      }
-      if (pace > 5.5) {
-        return colorchart[11];
-      }
-      if (pace > 5) {
-        return colorchart[12];
-      }
-      if (pace > 4.5) {
-        return colorchart[13];
-      }
-      if (pace > 4) {
-        return colorchart[14];
-      }
-      return colorchart[15];
-    };
+    
     let datapoints = [];
     let col = null;
     let lastpace = null;
@@ -495,7 +503,7 @@ class Map extends React.Component {
       let t = time.data[i] - time.data[j];
       let d = distance.data[i] - distance.data[j];
       let pace = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
-      let icol = color(pace);
+      let icol = paceColor(pace);
       if (col === null) {
         col = icol;
         lastpace = pace;
