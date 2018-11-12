@@ -103,6 +103,43 @@ const hrColor = function(bpm) {
   return '#ff0000';
 };
 
+const cadenceColor = function(spm) {
+  if (spm < 60) {
+    return colorchart[0];
+  }
+  if (spm < 65) {
+    return colorchart[1];
+  }
+  if (spm < 70) {
+    return colorchart[2];
+  }
+  if (spm < 75) {
+    return colorchart[3];
+  }
+  if (spm < 80) {
+    return colorchart[4];
+  }
+  if (spm < 85) {
+    return colorchart[5];
+  }
+  if (spm < 90) {
+    return colorchart[6];
+  }
+  if (spm < 95) {
+    return colorchart[7];
+  }
+  if (spm < 100) {
+    return colorchart[8];
+  }
+  if (spm < 105) {
+    return colorchart[9];
+  }
+  if (spm < 110) {
+    return colorchart[10];
+  }
+  return colorchart[11];
+};
+
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -381,6 +418,9 @@ class Map extends React.Component {
         case 'hr':
           this.graph.colourGraph(hrColor,0);
           break;
+        case 'cadence':
+          this.graph.colourGraph(cadenceColor,2);
+          break;
       }
       this.graph.draw();
     } catch(err) {
@@ -430,46 +470,11 @@ class Map extends React.Component {
     if (!latlng || !cadence) {
       return;
     }
-    const color = function(spm) {
-      if (spm < 60) {
-        return colorchart[0];
-      }
-      if (spm < 65) {
-        return colorchart[1];
-      }
-      if (spm < 70) {
-        return colorchart[2];
-      }
-      if (spm < 75) {
-        return colorchart[3];
-      }
-      if (spm < 80) {
-        return colorchart[4];
-      }
-      if (spm < 85) {
-        return colorchart[5];
-      }
-      if (spm < 90) {
-        return colorchart[6];
-      }
-      if (spm < 95) {
-        return colorchart[7];
-      }
-      if (spm < 100) {
-        return colorchart[8];
-      }
-      if (spm < 105) {
-        return colorchart[9];
-      }
-      if (spm < 110) {
-        return colorchart[10];
-      }
-      return colorchart[11];
-    };
+    
     let datapoints = [];
     let col = null;
     for (let i=0; i<latlng.data.length; ++i) {
-      let icol = color(cadence.data[i]);
+      let icol = cadenceColor(cadence.data[i]);
       if (icol === col) {
         datapoints.push(latlng.data[i]);
       } else {
