@@ -140,6 +140,55 @@ const cadenceColor = function(spm) {
   return colorchart[11];
 };
 
+const efficiencyColor = function(hpm) {
+  if (hpm > 1800) {
+    return colorchart[0];
+  }
+  if (hpm > 1700) {
+    return colorchart[1];
+  }
+  if (hpm > 1600) {
+    return colorchart[2];
+  }
+  if (hpm > 1500) {
+    return colorchart[3];
+  }
+  if (hpm > 1400) {
+    return colorchart[4];
+  }
+  if (hpm > 1300) {
+    return colorchart[5];
+  }
+  if (hpm > 1200) {
+    return colorchart[6];
+  }
+  if (hpm > 1100) {
+    return colorchart[7];
+  }
+  if (hpm > 1000) {
+    return colorchart[8];
+  }
+  if (hpm > 900) {
+    return colorchart[9];
+  }
+  if (hpm > 800) {
+    return colorchart[10];
+  }
+  if (hpm > 700) {
+    return colorchart[11];
+  }
+  if (hpm > 600) {
+    return colorchart[12];
+  }
+  if (hpm > 500) {
+    return colorchart[13];
+  }
+  if (hpm > 400) {
+    return colorchart[14];
+  }
+  return colorchart[15];
+};
+
 class Map extends React.Component {
   constructor(props) {
     super(props);
@@ -413,13 +462,16 @@ class Map extends React.Component {
     try {
       switch (this.state.view) {
         case 'pace':
-          this.graph.colourGraph((pace) => paceColor(-pace),0.4);
+          this.graph.colourGraph(pace => paceColor(-pace),0.4);
           break;
         case 'hr':
           this.graph.colourGraph(hrColor,0);
           break;
         case 'cadence':
           this.graph.colourGraph(cadenceColor,2);
+          break;
+        case 'efficiency':
+          this.graph.colourGraph(e => efficiencyColor(-e), 60);
           break;
       }
       this.graph.draw();
@@ -547,54 +599,7 @@ class Map extends React.Component {
     if (!latlng || !distance || !time || !hr) {
       return;
     }
-    const color = function(hpm) {
-      if (hpm > 1800) {
-        return colorchart[0];
-      }
-      if (hpm > 1700) {
-        return colorchart[1];
-      }
-      if (hpm > 1600) {
-        return colorchart[2];
-      }
-      if (hpm > 1500) {
-        return colorchart[3];
-      }
-      if (hpm > 1400) {
-        return colorchart[4];
-      }
-      if (hpm > 1300) {
-        return colorchart[5];
-      }
-      if (hpm > 1200) {
-        return colorchart[6];
-      }
-      if (hpm > 1100) {
-        return colorchart[7];
-      }
-      if (hpm > 1000) {
-        return colorchart[8];
-      }
-      if (hpm > 900) {
-        return colorchart[9];
-      }
-      if (hpm > 800) {
-        return colorchart[10];
-      }
-      if (hpm > 700) {
-        return colorchart[11];
-      }
-      if (hpm > 600) {
-        return colorchart[12];
-      }
-      if (hpm > 500) {
-        return colorchart[13];
-      }
-      if (hpm > 400) {
-        return colorchart[14];
-      }
-      return colorchart[15];
-    };
+    
     let datapoints = [];
     let col = null;
     let lasthpm = null;
@@ -609,7 +614,7 @@ class Map extends React.Component {
       let d = distance.data[i] - distance.data[j];
       let pace = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
       let hpm = pace * hr.data[i];
-      let icol = color(hpm);
+      let icol = efficiencyColor(hpm);
       if (col === null) {
         col = icol;
         lasthpm = hpm;
