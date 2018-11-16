@@ -1,2 +1,4 @@
 # Do not share private Strava token!
 strava_token.js
+fitbit_client_data.js
+
