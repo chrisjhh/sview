@@ -8,9 +8,13 @@ import { FallbackCache } from './lib/fallbackcache';
 import { Database } from './db/database';
 import { Routes } from './lib/routes';
 import { getWeather } from './lib/weather';
+import { redirect_uri } from './lib/fitbit_client_data';
+import * as fitbit from './lib/fitbit_token';
 
 const express = require('express');
 const path = require('path');
+const url = require('url');
+const URL = url.URL;
 
 const app = express();
 const port = 7676;
@@ -146,6 +150,23 @@ app.get('/api/weather/:id', (req,res) => {
   }
   getWeather(db,Number(req.params.id))
     .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+
+// Fitbit
+const fitbit_auth_endpoint = new URL(redirect_uri).pathname;
+app.get(fitbit_auth_endpoint, (req,res) => {
+  const code = req.query.code;
+  fitbit.requestToken(code)
+    .then(() => res.redirect('/'))
+    .catch(err => {
+      console.log(err);
+      res.redirect('/');
+    });
+});
+app.get('/api/fitbit/isauthorised', (req,res) => {
+  fitbit.getToken()
+    .then(token => res.json({authorised: token ? true : false}))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
