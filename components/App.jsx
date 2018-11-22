@@ -30,7 +30,7 @@ class App extends React.Component {
     this.state = {
       stats : defaultStats,
       activities: defaultActivities,
-      currentActivity: defaultActivities ? defaultActivities[0].id : null
+      currentActivity: defaultActivities ? defaultActivities[0] : null
     };
   }
 
@@ -40,7 +40,7 @@ class App extends React.Component {
         <div className="currentactivity">
           <FitbitAuthenticationLink/>
           <ErrorBoundary>
-            <Map id={this.state.currentActivity}/>
+            <Map activity={this.state.currentActivity}/>
           </ErrorBoundary>
         </div>
         <div className="activities">
@@ -56,15 +56,15 @@ class App extends React.Component {
     // Load data from Strava
     if (!testing) {
       getActivities()
-        .then(data => this.setState({activities: data, currentActivity: data[0].id}));
+        .then(data => this.setState({activities: data, currentActivity: data[0]}));
       getAthlete()
         .then(data => getStats(data.id))
         .then(data => this.setState({stats: data}));
     }
   }
 
-  selectActivity(activityID) {
-    this.setState({currentActivity: activityID});
+  selectActivity(activity) {
+    this.setState({currentActivity: activity});
   }
 
   moreActivities() {

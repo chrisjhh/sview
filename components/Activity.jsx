@@ -15,7 +15,7 @@ const dateFormat = function(time) {
 };
 
 const Activity = props => (
-  <div className={'activity ' + props.activity.type.toLowerCase()} onClick={() => props.selectActivity(props.activity.id)}>
+  <div className={'activity ' + props.activity.type.toLowerCase()} onClick={() => props.selectActivity(props.activity)}>
     <div className={props.activity.workout_type === 1 ? 'type race' : 'type'}></div>
     <div className="contents">
       <div className="row1">

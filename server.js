@@ -9,7 +9,8 @@ import { Database } from './db/database';
 import { Routes } from './lib/routes';
 import { getWeather } from './lib/weather';
 import { redirect_uri } from './lib/fitbit_client_data';
-import * as fitbit from './lib/fitbit_token';
+import * as fitbitToken from './lib/fitbit_token';
+import * as fitbit from './lib/fitbit';
 
 const express = require('express');
 const path = require('path');
@@ -88,7 +89,7 @@ app.get('/api/v3/athlete/activities', (req,res) => {
     .then(data => {
       if (db_connected) {
         db.updateRunData(data)
-          .catch(err => console.log('Error updating run data'));
+          .catch(err => console.log('Error updating run data',err));
       }
       return res.json(data);
     })
@@ -157,7 +158,7 @@ app.get('/api/weather/:id', (req,res) => {
 const fitbit_auth_endpoint = new URL(redirect_uri).pathname;
 app.get(fitbit_auth_endpoint, (req,res) => {
   const code = req.query.code;
-  fitbit.requestToken(code)
+  fitbitToken.requestToken(code)
     .then(() => res.redirect('/'))
     .catch(err => {
       console.log(err);
@@ -165,8 +166,13 @@ app.get(fitbit_auth_endpoint, (req,res) => {
     });
 });
 app.get('/api/fitbit/isauthorised', (req,res) => {
-  fitbit.getToken()
+  fitbitToken.getToken()
     .then(token => res.json({authorised: token ? true : false}))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+app.get('/api/fitbit/heartrate', (req,res) => {
+  fitbit.getHeartRateData(req.query.time,req.query.duration)
+    .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
