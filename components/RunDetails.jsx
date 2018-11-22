@@ -5,7 +5,8 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
 import HBPerMile from './HBPerMile';
-import { getStats, getWeather, fitbitHeartrate } from '../lib/localhost';
+import { getStats, getWeather } from '../lib/localhost';
+import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -68,25 +69,9 @@ class RunDetails extends React.Component  {
         .catch(err => console.log(err));
       // Get fitbit hr info if no hr data
       if (!this.state.activity.has_heartrate) {
-        fitbitHeartrate(this.state.activity.start_date_local, this.state.activity.elapsed_time)
-          .then(response => {
-            const series = response['activities-heart-intraday'];
-            if (series) {
-              const values = series.dataset.map(x => x.value);
-              let max = 0;
-              let sum = 0;
-              values.forEach(x => {
-                sum += x;
-                max = Math.max(max,x);
-              });
-              const newActivity = {...this.state.activity};
-              newActivity.has_heartrate = true;
-              newActivity.average_heartrate = sum / values.length;
-              newActivity.max_heartrate = max;
-              newActivity.heartrate_from_fitbit = true;
-              this.setState({activity : newActivity});
-            }
-          });
+        addFitbitHeartRateToActivity(this.state.activity)
+          .then(activity => this.setState({activity}))
+          .catch(err => console.log(err));
       }
     }
   }
