@@ -311,7 +311,7 @@ class Map extends React.Component {
         ydata = this.getPaceData(span);
         if (ydata) {
           const hr = this.getStream('heartrate');
-          ydata = hr ? ydata.map((curr,i) => -curr * hr.data[i]) : null;
+          ydata = hr ? ydata.map((curr,i) => hr.data[i] ? -curr * hr.data[i] : null) : null;
         }
         break;
       case 'inclination':
@@ -487,7 +487,7 @@ class Map extends React.Component {
     let smooth = 60;
     for (let i=0; i<latlng.data.length; ++i) {
       let j = i - 40;
-      if (j < 0) {
+      if (j < 0 || hr.data[i] == null) {
         datapoints.push(latlng.data[i]);
         continue;
       }
