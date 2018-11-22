@@ -130,7 +130,7 @@ class Map extends React.Component {
 
   loadFitbitHeartRate() {
     fitbitHeartrate(
-      this.state.activity.start_date,
+      this.state.activity.start_date_local,
       this.state.activity.elapsed_time
     )
       .then(response =>{

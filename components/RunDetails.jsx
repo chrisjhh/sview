@@ -5,7 +5,7 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
 import HBPerMile from './HBPerMile';
-import { getStats, getWeather } from '../lib/localhost';
+import { getStats, getWeather, fitbitHeartrate } from '../lib/localhost';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -26,18 +26,19 @@ class RunDetails extends React.Component  {
   constructor(props) {
     super(props);
     this.state = {
+      activity: props.activity,
       stats: null,
       weather: null
     };
   }
 
   render() {
-    const isRace = this.props.activity.workout_type === 1;
-    const time = isRace ? this.props.activity.elapsed_time : this.props.activity.moving_time;
-    const strPace = pace(this.props.activity.distance,time);
+    const isRace = this.state.activity.workout_type === 1;
+    const time = isRace ? this.state.activity.elapsed_time : this.state.activity.moving_time;
+    const strPace = pace(this.state.activity.distance,time);
     return (
       <span className='detail'>
-        <span className='distance'>{miles(this.props.activity.distance)}</span>
+        <span className='distance'>{miles(this.state.activity.distance)}</span>
         <span className='duration'>{duration(time)}
           { this.award() }
         </span>
@@ -46,10 +47,10 @@ class RunDetails extends React.Component  {
             <span className="units">/mi</span>
           </span>
           : null }
-        <HeartRate activity={this.props.activity}/>
-        <XPoints activity={this.props.activity}/>
-        <VDot activity={this.props.activity}/>
-        <HBPerMile activity={this.props.activity}/>
+        <HeartRate activity={this.state.activity}/>
+        <XPoints activity={this.state.activity}/>
+        <VDot activity={this.state.activity}/>
+        <HBPerMile activity={this.state.activity}/>
         { this.weather() }
       </span>
     );
@@ -59,12 +60,34 @@ class RunDetails extends React.Component  {
     // Check if we are running on local server with its own cache
     if (location.port && !isNaN(Number(location.port)) && 
         Number(location.port) !== 80) {
-      getStats(this.props.activity.id, {date: this.props.activity.start_date_local})
+      getStats(this.state.activity.id, {date: this.state.activity.start_date_local})
         .then(stats => this.setState({stats}))
         .catch(err => console.log(err));
-      getWeather(this.props.activity.id)
+      getWeather(this.state.activity.id)
         .then(weather => this.setState({weather}))
         .catch(err => console.log(err));
+      // Get fitbit hr info if no hr data
+      if (!this.state.activity.has_heartrate) {
+        fitbitHeartrate(this.state.activity.start_date_local, this.state.activity.elapsed_time)
+          .then(response => {
+            const series = response['activities-heart-intraday'];
+            if (series) {
+              const values = series.dataset.map(x => x.value);
+              let max = 0;
+              let sum = 0;
+              values.forEach(x => {
+                sum += x;
+                max = Math.max(max,x);
+              });
+              const newActivity = {...this.state.activity};
+              newActivity.has_heartrate = true;
+              newActivity.average_heartrate = sum / values.length;
+              newActivity.max_heartrate = max;
+              newActivity.heartrate_from_fitbit = true;
+              this.setState({activity : newActivity});
+            }
+          });
+      }
     }
   }
 
@@ -78,7 +101,7 @@ class RunDetails extends React.Component  {
     // Is this a PB?
     if (this.state.stats.pbs && this.state.stats.pbs.length >= 3) {
       for(let i=0; i<3; ++i) {
-        if (this.props.activity.elapsed_time == this.state.stats.pbs[i]) {
+        if (this.state.activity.elapsed_time == this.state.stats.pbs[i]) {
           return (
             <span className={'award pb ' + ordinals[i]} title={pb_titles[i]}></span>
           );
@@ -88,7 +111,7 @@ class RunDetails extends React.Component  {
     // Is this an SB?
     if (this.state.stats.sbs && this.state.stats.sbs.length >= 3) {
       for(let i=0; i<3; ++i) {
-        if (this.props.activity.elapsed_time == this.state.stats.sbs[i]) {
+        if (this.state.activity.elapsed_time == this.state.stats.sbs[i]) {
           return (
             <span className={'award sb ' + ordinals[i]} title={sb_titles[i]}></span>
           );
@@ -100,14 +123,14 @@ class RunDetails extends React.Component  {
       // Take all except the first one as this is us!
       const recent = this.state.stats.recent.slice(1);
       const average = recent.reduce((p,c) => p + c, 0) / recent.length;
-      const miles = this.props.activity.distance / 1609.34;
+      const miles = this.state.activity.distance / 1609.34;
       const tol = 10 * miles;
-      if (this.props.activity.elapsed_time < average - tol) {
+      if (this.state.activity.elapsed_time < average - tol) {
         return (
           <span className="award faster" title="Faster than recent average."></span>
         );
       }
-      if (this.props.activity.elapsed_time > average + tol) {
+      if (this.state.activity.elapsed_time > average + tol) {
         return (
           <span className="award slower" title="Slower than recent average."></span>
         );
