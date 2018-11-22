@@ -153,13 +153,17 @@ class Map extends React.Component {
           // We want to insert the data we have got
           const hrStream = {type : 'heartrate', data : []};
           for (let i = 0; i < timeStream.data.length; ++i) {
+            let found = false;
             for (let j = 0; j < times.length; ++j) {
               if (timeStream.data[i] == times[j]) {
                 hrStream.data.push(values[j]);
-                continue;
+                found = true;
+                break;
               }
             }
-            hrStream.data.push(null);
+            if (!found) {
+              hrStream.data.push(null);
+            }
           }
           newStreams.push(hrStream);
         }
