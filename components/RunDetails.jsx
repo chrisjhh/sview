@@ -5,8 +5,9 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
 import HBPerMile from './HBPerMile';
-import { getStats, getWeather } from '../lib/localhost';
+import { getStats } from '../lib/localhost';
 import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
+import Weather from './Weather';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -52,7 +53,7 @@ class RunDetails extends React.Component  {
         <XPoints activity={this.state.activity}/>
         <VDot activity={this.state.activity}/>
         <HBPerMile activity={this.state.activity}/>
-        { this.weather() }
+        <Weather activity={this.state.activity}/>
       </span>
     );
   }
@@ -63,9 +64,6 @@ class RunDetails extends React.Component  {
         Number(location.port) !== 80) {
       getStats(this.state.activity.id, {date: this.state.activity.start_date_local})
         .then(stats => this.setState({stats}))
-        .catch(err => console.log(err));
-      getWeather(this.state.activity.id)
-        .then(weather => this.setState({weather}))
         .catch(err => console.log(err));
       // Get fitbit hr info if no hr data
       if (!this.state.activity.has_heartrate) {
@@ -123,66 +121,6 @@ class RunDetails extends React.Component  {
     }
     // Nothing of note
     return null; 
-  }
-
-  weather() {
-    if (!this.state.weather) {
-      return null;
-    }
-    let cold = null;
-    let temp = this.state.weather[0].temperature;
-    if (temp) {
-      if (temp < 5) {
-        cold = (
-          <span className="icon cold" title="Cold"></span>
-        );
-      } else if (temp > 20) {
-        cold = (
-          <span className="icon hot" title="Hot"></span>
-        );
-      }
-    }
-    let night = null;
-    if (this.state.weather[0].solar_elevation && 
-        this.state.weather[0].solar_elevation < -6) {
-      night = (
-        <span className="icon night" title="Dark"></span>
-      );
-    }
-    let rain = null;
-    const precipitation = this.state.weather[0].precipitation;
-    if (precipitation && precipitation > 0) {
-      if (precipitation < 2.5) {
-        rain = (
-          <span className="icon rain light" title="Light rain"></span>
-        );
-      } else if (precipitation < 7.6) {
-        rain = (
-          <span className="icon rain moderate" title="Rain"></span>
-        );
-      } else {
-        rain = (
-          <span className="icon rain heavy" title="Heavy rain"></span>
-        );
-      }
-    }
-    let wind = null;
-    const windspeed = this.state.weather[0].wind_speed;
-    if (windspeed && windspeed > 5.5) {
-      wind = (
-        <span className="icon wind" title="Windy"></span>
-      );
-    }
-    return (
-      <span className="weather">
-        {this.state.weather[0].temperature}
-        <span className="units">°C</span>
-        { cold }
-        { night }
-        { rain }
-        { wind }
-      </span>
-    );
   }
   
 }
