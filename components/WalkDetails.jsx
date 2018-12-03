@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
+import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
+import HeartRate from './HeartRate';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -25,17 +27,39 @@ const elevation = function(gain) {
   return ft.toFixed(0);
 };
 
-const WalkDetails = props => (
-  <span className="detail">
-    <span className="location">{location(props.activity)}</span>
-    <span className='distance'>{miles(props.activity.distance)}</span>
-    <span className='duration'>{
-      duration(props.activity.elapsed_time)}</span>
-    <span className='elevation'>{elevation(props.activity.total_elevation_gain)}
-      <span className='units'>ft</span>
-    </span>
-  </span>
-);
+class WalkDetails extends React.Component  {
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      activity: props.activity
+    };
+  }
+
+  render() {
+    return(
+      <span className="detail">
+        <span className="location">{location(this.state.activity)}</span>
+        <span className='distance'>{miles(this.state.activity.distance)}</span>
+        <span className='duration'>{
+          duration(this.state.activity.elapsed_time)}</span>
+        <span className='elevation'>{elevation(this.state.activity.total_elevation_gain)}
+          <span className='units'>ft</span>
+        </span>
+        <HeartRate activity={this.state.activity}/>
+      </span>
+    );
+  }
+
+  componentDidMount() {
+    // Get fitbit hr info if no hr data
+    if (!this.state.activity.has_heartrate) {
+      addFitbitHeartRateToActivity(this.state.activity)
+        .then(activity => this.setState({activity}))
+        .catch(err => console.log(err));
+    }
+  }
+}
 
 WalkDetails.propTypes = {
   activity: PropTypes.object.isRequired
