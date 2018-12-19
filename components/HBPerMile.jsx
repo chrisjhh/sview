@@ -13,9 +13,14 @@ const HBPerMile = props => {
   if (!props.activity.has_heartrate) {
     return (null);
   }
+  const efficiency = hbPerMile(props.activity);
+  let classes = 'hbpermile';
+  if (props.activity.heartrate_from_fitbit) {
+    classes += ' fitbit';
+  }
   return (
-    <span className='hbpermile'>
-      {hbPerMile(props.activity)}
+    <span className={classes} title={'Running efficiency ' + (160934/efficiency).toFixed(0) + ' cm/♥'}>
+      {efficiency}
       <span className="units">♥/mi</span>
     </span>
   );

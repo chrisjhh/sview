@@ -56,6 +56,10 @@
   background-color: red;
 }
 
+.fitbit {
+  color: blue;
+}
+
 .weather .icon {
   display: inline-block;
   height: 14px;
