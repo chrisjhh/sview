@@ -19,9 +19,9 @@ const HBPerMile = props => {
     classes += ' fitbit';
   }
   return (
-    <span className={classes} title={'Running efficiency ' + (160934/efficiency).toFixed(0) + ' cm/♥'}>
-      {efficiency}
-      <span className="units">♥/mi</span>
+    <span className={classes} title={'Running efficiency ' + efficiency + ' ♥/mi'}>
+      {(160934/efficiency).toFixed(0)}
+      <span className="units">cm/♥</span>
     </span>
   );
 };
