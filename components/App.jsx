@@ -48,7 +48,6 @@ class App extends React.Component {
           <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
             moreActivities={this.moreActivities.bind(this)}/>
         </div>
-        <div className="attribution">Powered by the <a href="https://www.weatherbit.io/">Weatherbit API</a></div>
       </div>
     );
   }
