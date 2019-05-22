@@ -40,3 +40,5 @@ export class FitbitAuthenticationLink extends React.Component {
   }
 
 }
+
+export default FitbitAuthenticationLink;

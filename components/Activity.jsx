@@ -2,17 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import ActivityDetails from './ActivityDetails'; 
 import SocialDetails from './SocialDetails';
-
-const dateFormat = function(time) {
-  const date = new Date(time);
-  const day = date.getDate();
-  const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-  const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-    'Sep', 'Oct', 'Nov', 'Dec'][date.getMonth()];
-  const hour = date.getHours();
-  const min = date.getMinutes();
-  return `${hour.toString().padStart(2,'0')}:${min.toString().padStart(2,'0')} ${weekday} ${day} ${month}`;
-};
+import { dateFormat } from '../lib/duration';
 
 const Activity = props => (
   <div className={'activity ' + props.activity.type.toLowerCase()} onClick={() => props.selectActivity(props.activity)}>

@@ -6,6 +6,7 @@ import Stats from './Stats';
 import Map from './Map';
 import { ErrorBoundary } from './ErrorBoundary';
 import { FitbitAuthenticationLink } from './FitbitAuthenticationLink';
+import CurrentActivity from './CurrentActivity';
 
 let testing = true;
 let defaultActivities = null;
@@ -37,12 +38,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <div className="currentactivity">
-          <FitbitAuthenticationLink/>
-          <ErrorBoundary>
-            <Map activity={this.state.currentActivity}/>
-          </ErrorBoundary>
-        </div>
+        <CurrentActivity activity={this.state.currentActivity}/>
         <div className="activities">
           <Stats stats={this.state.stats}/>
           <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
