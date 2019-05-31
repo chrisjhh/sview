@@ -4,7 +4,7 @@ const expect = chai.expect;
 import { Database } from '../db/database';
 import { getActivities } from '../lib/dev/test_strava';
 
-let current_version = '1.0';
+let current_version = '1.1';
 let db = null;
 let data = null;
 let connected = null;
@@ -21,7 +21,7 @@ describe('DB1.0', function() {
     if (await db.exists()) {
       await db.drop();
     }
-    if (current_version == '1.0x') {
+    if (current_version === '1.0') {
       await db.init();
       data = await getActivities();
       await db.updateRunData(data);

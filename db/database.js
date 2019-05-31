@@ -132,6 +132,9 @@ export class Database {
             [key,value]
           );
         } else {
+          if (key === 'version') {
+            this._version = null;
+          }
           return this.qi.query(
             'UPDATE properties SET value = $2 WHERE key = $1',
             [key,value]
