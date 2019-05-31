@@ -9,7 +9,7 @@ let db = null;
 let data = null;
 let connected = null;
 
-describe.only('Database', function() {
+describe('Database', function() {
 
   before(async function() {
     db = new Database({database: 'running_test'});

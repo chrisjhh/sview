@@ -1,7 +1,8 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-import { estimatedTimes, hms, vdot } from '../lib/vdot';
+import { hms } from '../lib/duration';
+import { vdot } from '../lib/vdot';
 
 describe('hms', function() {
   it('should work as expected', function() {
