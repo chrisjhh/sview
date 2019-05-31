@@ -4,7 +4,8 @@ const expect = chai.expect;
 import { Database } from '../db/database';
 import { getActivities } from '../lib/dev/test_strava';
 
-let current_version = '1.1';
+import current_version from './current_db_version';
+
 let db = null;
 let data = null;
 let connected = null;
