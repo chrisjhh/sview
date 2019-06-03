@@ -342,7 +342,7 @@ class Map extends React.Component {
         break;
       case 'pace':
         if (this.state.activity.type === 'Walk') {
-          this.graph.min_y = Math.max(this.graph.min_y, -27);
+          this.graph.min_y = Math.max(this.graph.min_y, -60);
         } else {
           this.graph.min_y = Math.max(this.graph.min_y, -12);
         }
