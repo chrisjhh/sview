@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
-import { paceColor, hrColor, cadenceColor, efficiencyColor, colorchart } from '../lib/colours';
+import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, colorchart } from '../lib/colours';
 import { hms } from '../lib/duration';
 
 // Allow console log messages for now
@@ -293,6 +293,9 @@ class Map extends React.Component {
     if (intervals && intervals.length > 3) {
       span = 20;
     }
+    if (this.state.activity.type === 'Walk') {
+      span = 40;
+    }
     switch (this.state.view) {
       case 'route': 
         ydata = this.getStream('distance');
@@ -330,23 +333,40 @@ class Map extends React.Component {
     // Set limits
     switch (this.state.view) {
       case 'cadence':
-        this.graph.min_y = Math.max(this.graph.min_y, 60);
+        if (this.state.activity.type === 'Walk') {
+          this.graph.min_y = Math.max(this.graph.min_y, 20);
+          this.graph.max_y = Math.min(this.graph.max_y, 90);
+        } else {
+          this.graph.min_y = Math.max(this.graph.min_y, 60);
+        }
         break;
       case 'pace':
-        this.graph.min_y = Math.max(this.graph.min_y, -12);
+        if (this.state.activity.type === 'Walk') {
+          this.graph.min_y = Math.max(this.graph.min_y, -27);
+        } else {
+          this.graph.min_y = Math.max(this.graph.min_y, -12);
+        }
         break;
     }
     // Draw coulour sections under graph
     try {
       switch (this.state.view) {
         case 'pace':
-          this.graph.colourGraph(pace => paceColor(-pace),0.4);
+          if (this.state.activity.type === 'Walk') {
+            this.graph.colourGraph(pace => walkingPaceColor(-pace),1.0);
+          } else {
+            this.graph.colourGraph(pace => paceColor(-pace),0.4);
+          }
           break;
         case 'hr':
           this.graph.colourGraph(hrColor,0);
           break;
         case 'cadence':
-          this.graph.colourGraph(cadenceColor,2);
+          if (this.state.activity.type === 'Walk') {
+            this.graph.colourGraph(walkingCadenceColor,8);
+          } else {
+            this.graph.colourGraph(cadenceColor,2);
+          }
           break;
         case 'efficiency':
           this.graph.colourGraph(e => efficiencyColor(-e), 60);
@@ -407,11 +427,15 @@ class Map extends React.Component {
     if (!latlng || !cadence) {
       return;
     }
+    let colourFn = cadenceColor;
+    if (this.state.activity.type === 'Walk') {
+      colourFn = walkingCadenceColor;
+    }
     
     let datapoints = [];
     let col = null;
     for (let i=0; i<latlng.data.length; ++i) {
-      let icol = cadenceColor(cadence.data[i]);
+      let icol = colourFn(cadence.data[i]);
       if (icol === col) {
         datapoints.push(latlng.data[i]);
       } else {
@@ -441,6 +465,11 @@ class Map extends React.Component {
     let col = null;
     let lastpace = null;
     let smooth = 0.4;
+    let colourFn = paceColor;
+    if (this.state.activity.type === 'Walk') {
+      smooth = 0.8;
+      colourFn = walkingPaceColor;
+    }
     for (let i=0; i<latlng.data.length; ++i) {
       let j = i - 40;
       if (j < 0) {
@@ -450,7 +479,7 @@ class Map extends React.Component {
       let t = time.data[i] - time.data[j];
       let d = distance.data[i] - distance.data[j];
       let pace = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
-      let icol = paceColor(pace);
+      let icol = colourFn(pace);
       if (col === null) {
         col = icol;
         lastpace = pace;
