@@ -7,9 +7,12 @@
     "start": "babel-node server.js --presets es2015",
     "build": "webpack",
     "test": "mocha --require babel-core/register",
-    "testdb": "docker-compose -f ./docker-compose.yml -f ./docker-compose.testing.yml up -d && npm run test && docker-compose up -d",
+    "expose-db": "docker-compose -f ./docker-compose.yml -f ./docker-compose.testing.yml up -d",
+    "hide-db": "docker-compose up -d",
+    "testdb": "npm run expose-db && npm run test && npm run hide-db",
     "build-container": "npm run build && docker-compose build",
-    "deploy": "npm run build-container && docker-compose up -d"
+    "deploy": "npm run build-container && docker-compose up -d",
+    "dump-db": "npm run expose-db && babel-node --presets es2015 scripts/setup_db.js && pg_dump -U postgres temp_db > temp_db.sql && babel-node --presets es2015 scripts/cleanup_db.js && npm run hide-db"
   },
   "repository": {
     "type": "git",
