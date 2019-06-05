@@ -679,12 +679,23 @@ export class Database {
         // used as foreign key)
         await this.startTransaction();
         await this._execSQL('run_unique_strava_id.sql');
-        await this._execSQL('weather.sql');
+        await this._execSQL('weather1.1.sql');
         await this.setProperty('version', '1.1');
         await this.endTransaction();
         console.log('Updated running database to version 1.1');
-        break;
+        // deliberate fall through
       case '1.1':
+        await this.startTransaction();
+        // Drop foreign key on weather to allow weather info on non-run activities
+        await this._execSQL('drop_weather_foreign_key.sql');
+        // Store weather description details obtained from met office for
+        // an alternative way of telling if it was raining etc.
+        await this._execSQL('add_weather_description.sql');
+        await this.setProperty('version', '1.2');
+        await this.endTransaction();
+        console.log('Updated running database to version 1.2');
+        break;
+      case '1.2':
         // This is the current version
         // Everything is OK
         break;
