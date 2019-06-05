@@ -22,7 +22,7 @@ CREATE TABLE public.weather
     visibility real,
     sea_level_pressure real,
     uv real,
-    descripton character varying(30) COLLATE pg_catalog."default",
+    description character varying(30) COLLATE pg_catalog."default",
     CONSTRAINT weather_pkey PRIMARY KEY (id),
     CONSTRAINT weather_unique_run_timestamp UNIQUE (strava_id, "timestamp")
 )

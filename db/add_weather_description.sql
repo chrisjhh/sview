@@ -1,2 +1,2 @@
 ALTER TABLE public.weather
-    ADD COLUMN descripton character varying(30);
+    ADD COLUMN description character varying(30);
