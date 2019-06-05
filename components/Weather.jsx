@@ -37,6 +37,7 @@ class Weather extends React.Component {
     }
     let rain = null;
     const precipitation = this.state.weather[0].precipitation;
+    const description = this.state.weather[0].description;
     if (precipitation && precipitation > 0) {
       if (precipitation < 2.5) {
         rain = (
@@ -49,6 +50,20 @@ class Weather extends React.Component {
       } else {
         rain = (
           <span className="icon rain heavy" title="Heavy rain"></span>
+        );
+      }
+    } else if (description && description.match(/drizzle|rain/i)) {
+      if (description.match(/drizzle/i)) {
+        rain = (
+          <span className="icon rain light" title="Light rain"></span>
+        );
+      } else if (description.match(/heavy rain/i)) {
+        rain = (
+          <span className="icon rain heavy" title="Heavy rain"></span>
+        );
+      } else {
+        rain = (
+          <span className="icon rain moderate" title="Rain"></span>
         );
       }
     }

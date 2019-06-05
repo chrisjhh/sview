@@ -492,10 +492,10 @@ export class Database {
         wind_speed, wind_direction, humidity, dew_point,
         pressure, snow, precipitation, temperature,
         cloud_coverage, solar_elevation, solar_azimuth,
-        visibility,sea_level_pressure,uv
+        visibility,sea_level_pressure,uv,description
         )
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,
-          $12,$13,$14,$15,$16,$17)
+          $12,$13,$14,$15,$16,$17,$18)
         RETURNING id`,
       [strava_id, data.timestamp, data.city, data.wind_speed,
         data.wind_direction, data.humidity, data.dew_point,
@@ -503,7 +503,7 @@ export class Database {
         data.temperature, data.cloud_coverage,
         data.solar_elevation, data.solar_azimuth,
         data.visibility, data.sea_level_pressure,
-        data.uv
+        data.uv, data.weather_description
       ]
     )
       .then(res => {

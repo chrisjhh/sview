@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
 import HeartRate from './HeartRate';
+import Weather from './Weather';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -47,6 +48,7 @@ class WalkDetails extends React.Component  {
           <span className='units'>ft</span>
         </span>
         <HeartRate activity={this.state.activity}/>
+        <Weather activity={this.state.activity}/>
       </span>
     );
   }
