@@ -121,6 +121,21 @@ app.get('/api/v3/activities/:id/streams', (req,res) => {
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 
+// Search
+app.get('/api/search', (req,res) => {
+  let query = req.query.q;
+  if (db_connected) {
+    if (!query) {
+      return res.status(500).send('Required search parameter \'q\' not set');
+    }
+    db.search(query)
+      .then(data => res.json(data))
+      .catch(err => res.status(500).send('Internal server error: ' + err));
+  } else {
+    res.status(500).send('Database not connected');
+  }
+});
+
 // Cached Mapbox interface
 app.get('/api.tiles.mapbox.com/v4/:id/:z/:x/:y.png', (req,res) => {
   cachedGetTile(cache)(req.params.id,req.params.z,req.params.x,req.params.y,req.query)

@@ -562,6 +562,46 @@ export class Database {
       });
   }
 
+  /**
+   * Search the database for matching runs
+   * @param {String} query The string to search on
+   * @returns {Promise} A promise that resolves to null or the database rows
+   */
+  search(query) {
+    if (!query) {
+      return Promise.resolve([]);
+    }
+    let words = query.split(' ');
+    let conditions = [];
+    let to_match = [];
+    for (let word of words) {
+      if (word.toLowerCase() === 'race') {
+        conditions.push('(name ILIKE \'%race%\' OR is_race)');
+      } else if (word.match(/^20\d{2}/)) {
+        conditions.push(`(name LIKE '%${word}%' OR date_part('year', start_time) = ${word})`);
+      } else if (word.toUpperCase() === '10K') {
+        conditions.push('(name ILIKE \'%10K%\' OR (distance > 9750 AND distance < 10250))');
+      } else if (word.toUpperCase() === '5K') {
+        conditions.push('(name ILIKE \'%5K%\' OR (distance > 4750 AND distance < 5250))');
+      } else if (word.toUpperCase() === 'HM') {
+        conditions.push('(distance > 20500 AND distance < 21950)');
+      } else {
+        to_match.push(word);
+      }
+    }
+    if (to_match.length > 0) {
+      conditions.push('name ILIKE $1');
+    }
+    let params = to_match.length > 0 ? ['%' + to_match.join(' ') + '%'] : undefined;
+    //console.log('SELECT * FROM runs WHERE ' + conditions.join(' AND '), params);
+    return this.qi.query(
+      'SELECT * FROM runs WHERE ' + conditions.join(' AND ') + ' ORDER BY start_time DESC',
+      params
+    )
+      .then(res => res.rows);
+
+  }
+
 
   tableExists(tableName) {
     return this.qi.query(
@@ -580,7 +620,7 @@ export class Database {
       await this._execSQL('routes.sql');
       await this._execSQL('runs.sql');
       await this._execSQL('weather.sql');
-      await this.qi.query('INSERT INTO properties (key,value) values (\'version\',\'1.1\')');
+      await this.setProperty('version', '1.2');
     } catch(err) {
       await this.abortTransaction();
       throw err;
