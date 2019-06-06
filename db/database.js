@@ -580,9 +580,9 @@ export class Database {
       } else if (word.match(/^20\d{2}/)) {
         conditions.push(`(name LIKE '%${word}%' OR date_part('year', start_time) = ${word})`);
       } else if (word.toUpperCase() === '10K') {
-        conditions.push('(name ILIKE \'%10K%\' OR (distance > 9750 AND distance < 10250))');
+        conditions.push('(name ILIKE \'%10K%\' OR (distance > 9750 AND distance < 10350))');
       } else if (word.toUpperCase() === '5K') {
-        conditions.push('(name ILIKE \'%5K%\' OR (distance > 4750 AND distance < 5250))');
+        conditions.push('(name ILIKE \'%5K%\' OR (distance > 4750 AND distance < 5350))');
       } else if (word.toUpperCase() === 'HM') {
         conditions.push('(distance > 20500 AND distance < 21950)');
       } else {
