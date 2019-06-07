@@ -7,13 +7,17 @@ class Comments extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      count: props.activity.comment_count,
       loaded: false,
       comments: []
     };
   }
 
   render() {
-    if (this.props.activity.comment_count === 0) {
+    if (!this.state.count) {
+      if (this.state.count === undefined) {
+        this.loadComments();
+      }
       return (null);
     }
     let comments = <span>Loading...</span>;
@@ -26,7 +30,7 @@ class Comments extends React.Component {
     }
     return (
       <span className='comments tooltip' onMouseOver={this.loadComments.bind(this)}>
-        {'🗩' + this.props.activity.comment_count}
+        {'🗩' + this.state.count}
         <span className='tooltiptext'>
           {comments}
         </span>
@@ -41,7 +45,8 @@ class Comments extends React.Component {
       getComments(this.props.activity.id)
         .then(data => self.setState({
           loaded: true,
-          comments: data
+          comments: data,
+          count: data.length
         }));
     }
   }

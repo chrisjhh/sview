@@ -7,13 +7,17 @@ class Kudos extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      count : props.activity.kudos_count,
       loaded: false,
       kudos: []
     };
   }
 
   render() {
-    if (this.props.activity.kudos_count === 0) {
+    if (!this.state.count) {
+      if (this.state.count == undefined) {
+        this.loadKudos();
+      }
       return (null);
     }
     let kudos = <span>Loading...</span>;
@@ -22,7 +26,7 @@ class Kudos extends React.Component {
     }
     return (
       <span className='kudos tooltip' onMouseOver={this.loadKudos.bind(this)}>
-        {'👍' + this.props.activity.kudos_count}
+        {'👍' + this.state.count}
         <span className='tooltiptext'>
           {kudos}
         </span>
@@ -37,7 +41,8 @@ class Kudos extends React.Component {
       getKudos(this.props.activity.id)
         .then(data => self.setState({
           loaded: true,
-          kudos: data
+          kudos: data,
+          count: data.length
         }));
     }
   }

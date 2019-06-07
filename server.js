@@ -5,7 +5,7 @@
 import * as strava from './lib/cached_strava';
 import { cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
-import { Database } from './db/database';
+import { Database, row_to_strava_run } from './db/database';
 import { Routes } from './lib/routes';
 import { getWeather } from './lib/weather';
 import { redirect_uri } from './lib/fitbit_client_data';
@@ -89,7 +89,7 @@ app.get('/api/v3/athlete/activities', (req,res) => {
     .then(data => {
       if (db_connected) {
         db.updateRunData(data)
-          .catch(err => console.log('Error updating run data',err));
+          .catch(err => console.log('Error updating run data',err, data));
       }
       return res.json(data);
     })
@@ -129,7 +129,7 @@ app.get('/api/search', (req,res) => {
       return res.status(500).send('Required search parameter \'q\' not set');
     }
     db.search(query)
-      .then(data => res.json(data))
+      .then(data => res.json(data.map(row_to_strava_run)))
       .catch(err => res.status(500).send('Internal server error: ' + err));
   } else {
     res.status(500).send('Database not connected');

@@ -9,8 +9,10 @@ const CurrentActivity = props => (
   <div className='currentactivity'>
     <FitbitAuthenticationLink/>
     <div className='titlebar'>
-      <span className='title'>{props.activity ? props.activity.name : '...'}</span>
-      <span className='date'>{props.activity ? dateFormat(props.activity.start_date) : ''}</span>
+      <a href={props.activity ? 'https://www.strava.com/activities/' + props.activity.id : '.'}>
+        <span className='title'>{props.activity ? props.activity.name : '...'}</span>
+        <span className='date'>{props.activity ? dateFormat(props.activity.start_date) : ''}</span>
+      </a>
     </div>
     <ErrorBoundary>
       <Map activity={props.activity}/>

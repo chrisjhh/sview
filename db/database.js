@@ -595,7 +595,7 @@ export class Database {
     let params = to_match.length > 0 ? ['%' + to_match.join(' ') + '%'] : undefined;
     //console.log('SELECT * FROM runs WHERE ' + conditions.join(' AND '), params);
     return this.qi.query(
-      'SELECT * FROM runs WHERE ' + conditions.join(' AND ') + ' ORDER BY start_time DESC',
+      'SELECT * FROM runs WHERE ' + conditions.join(' AND ') + ' ORDER BY start_time DESC LIMIT 20',
       params
     )
       .then(res => res.rows);
@@ -759,6 +759,32 @@ export class Database {
     }
   }
 }
+
+/**
+ * Convert a datbase row representing a run to the equivalent strava data that would
+ * be retrieved with activities
+ */
+export const row_to_strava_run = function(row) {
+  let data = {
+    id : Number(row.strava_id),
+    type : 'Run',
+    name : row.name,
+    workout_type : row.is_race ? 1 : null,
+    elapsed_time : row.duration,
+    moving_time : row.duration,
+    distance : row.distance,
+    start_date : row.start_time,
+    start_date_local : row.start_time,
+    total_elevation_gain : row.elevation,
+    has_heartrate : row.average_heartrate ? true : false,
+    average_heartrate : row.average_heartrate,
+    max_heartrate : row.max_heartrate,
+    average_cadence : row.average_cadence,
+    start_latlng : [row.start_latlng.x, row.start_latlng.y],
+    end_latlng : [row.end_latlng.x, row.end_latlng.y]
+  };
+  return data;
+};
 
 // To start database using docker
 // docker run -it --rm -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres

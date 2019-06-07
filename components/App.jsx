@@ -7,6 +7,8 @@ import Map from './Map';
 import { ErrorBoundary } from './ErrorBoundary';
 import { FitbitAuthenticationLink } from './FitbitAuthenticationLink';
 import CurrentActivity from './CurrentActivity';
+import { getRunsFromSearch } from '../lib/localhost';
+import NavBar from './NavBar';
 
 let testing = true;
 let defaultActivities = null;
@@ -35,12 +37,14 @@ class App extends React.Component {
     };
   }
 
+  //<Stats stats={this.state.stats}/>
   render() {
     return (
       <div>
+        <NavBar searchActivities={callAfterDelay(this.searchActivities.bind(this),1000)}/>
         <CurrentActivity activity={this.state.currentActivity}/>
         <div className="activities">
-          <Stats stats={this.state.stats}/>
+          
           <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
             moreActivities={this.moreActivities.bind(this)}/>
         </div>
@@ -52,6 +56,7 @@ class App extends React.Component {
     // Load data from Strava
     if (!testing) {
       getActivities()
+      //getRunsFromSearch('two castle')
         .then(data => this.setState({activities: data, currentActivity: data[0]}));
       getAthlete()
         .then(data => getStats(data.id))
@@ -73,6 +78,27 @@ class App extends React.Component {
       ));
   }
 
+  searchActivities(query) {
+    this.setState({activities: null});
+    if (query) {
+      getRunsFromSearch(query)
+        .then(data => this.setState({activities: data}));
+    } else {
+      getActivities()
+        .then(data => this.setState({activities: data}));
+    }
+  }
+
+}
+
+function callAfterDelay(fn,delay) {
+  let handle = null;
+  return function(...args) {
+    if (handle) {
+      clearTimeout(handle);
+    }
+    handle = setTimeout(function(){ fn(...args); }, delay);
+  };
 }
 
 export default App;
