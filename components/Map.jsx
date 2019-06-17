@@ -296,6 +296,7 @@ class Map extends React.Component {
     if (this.state.activity.type === 'Walk') {
       span = 40;
     }
+    this.graph.setXLabels('time');
     switch (this.state.view) {
       case 'route': 
         ydata = this.getStream('distance');
@@ -308,6 +309,7 @@ class Map extends React.Component {
         break;
       case 'pace':
         xdata = this.getStream('distance');
+        this.graph.setXLabels('distance');
         ydata = this.getPaceData(span);
         if (ydata) {
           ydata = ydata.map(a => -a);
@@ -315,6 +317,7 @@ class Map extends React.Component {
         break;
       case 'efficiency':
         xdata = this.getStream('distance');
+        this.graph.setXLabels('distance');
         ydata = this.getPaceData(span);
         if (ydata) {
           const hr = this.getStream('heartrate');
@@ -323,6 +326,7 @@ class Map extends React.Component {
         break;
       case 'inclination':
         xdata = this.getStream('distance');
+        this.graph.setXLabels('distance');
         ydata = this.getStream('altitude');
         break;
       default:
@@ -372,6 +376,10 @@ class Map extends React.Component {
           this.graph.colourGraph(e => efficiencyColor(-e), 60);
           break;
       }
+      // Draw the axes
+      this.graph.drawAxes();
+
+      // Draw the trace
       this.graph.draw();
     } catch(err) {
       console.log(err);
