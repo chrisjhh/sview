@@ -303,9 +303,11 @@ class Map extends React.Component {
         break;
       case 'hr':
         ydata = this.getStream('heartrate');
+        this.graph.setYLabels('hr');
         break;
       case 'cadence':
         ydata = this.getStream('cadence');
+        this.graph.setYLabels('cadence');
         break;
       case 'pace':
         xdata = this.getStream('distance');
