@@ -310,6 +310,7 @@ class Map extends React.Component {
       case 'pace':
         xdata = this.getStream('distance');
         this.graph.setXLabels('distance');
+        this.graph.setYLabels('pace');
         ydata = this.getPaceData(span);
         if (ydata) {
           ydata = ydata.map(a => -a);
