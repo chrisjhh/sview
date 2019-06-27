@@ -76,7 +76,7 @@ class Weather extends React.Component {
     }
     return (
       <span className="weather">
-        {this.state.weather[0].temperature}
+        {this.state.weather[0].temperature.toFixed(1)}
         <span className="units">°C</span>
         { cold }
         { night }

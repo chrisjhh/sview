@@ -86,7 +86,7 @@
 }
 
 .weather .rain.heavy {
-  background: url("../img/heavy_rain.png") 0px 0px/12px no-repeat;
+  background: url("../img/heavy_rain.png") -2px -3px/18px no-repeat;
 }
 
 .weather .wind {
