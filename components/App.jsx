@@ -9,6 +9,7 @@ import { FitbitAuthenticationLink } from './FitbitAuthenticationLink';
 import CurrentActivity from './CurrentActivity';
 import { getRunsFromSearch } from '../lib/localhost';
 import NavBar from './NavBar';
+import Attribution from './Attribution';
 
 let testing = true;
 let defaultActivities = null;
@@ -48,6 +49,7 @@ class App extends React.Component {
           <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
             moreActivities={this.moreActivities.bind(this)}/>
         </div>
+        <Attribution/>
       </div>
     );
   }
