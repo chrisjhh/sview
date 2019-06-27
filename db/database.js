@@ -786,5 +786,23 @@ export const row_to_strava_run = function(row) {
   return data;
 };
 
+export const strava_activity_to_row = function(data) {
+  let row = {
+    strava_id : Number(data.id),
+    name : data.name,
+    is_race : data.workout_type === 1 ? true : false,
+    duration : data.elapsed_time,
+    distance : data.distance,
+    start_time : data.start_date_local,
+    elevation : data.total_elevation_gain,
+    average_heartrate : data.average_heartrate,
+    max_heartrate : data.max_heartrate,
+    average_cadence : data.average_cadence,
+    start_latlng : {x: data.start_latlng[0], y: data.start_latlng[1]},
+    end_latlng : {x: data.end_latlng[0], y: data.end_latlng[1]}
+  };
+  return row;
+};
+
 // To start database using docker
 // docker run -it --rm -p 5432:5432 -v pgdata:/var/lib/postgresql/data postgres
