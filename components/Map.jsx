@@ -7,6 +7,7 @@ import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
 import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, colorchart } from '../lib/colours';
 import { hms } from '../lib/duration';
+import { velocity } from '../lib/velocity';
 
 // Allow console log messages for now
 /*eslint no-console: off*/
@@ -231,20 +232,9 @@ class Map extends React.Component {
     if (!distance || !time) {
       return null;
     }
-    const pace = distance.data.map((curr,index) => {
-      let j = index - span;
-      if (j < 0) {
-        j = 0;
-      }
-      let i = index;
-      if (i < span) {
-        i = span; 
-      }
-      let t = time.data[i] - time.data[j];
-      let d = distance.data[i] - distance.data[j];
-      let p = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
-      return p;
-    });
+    const tol = 2;
+    let velocities = velocity(distance.data,time.data,tol,span);
+    const pace = velocities.map(v => v > 0 ? 1609.43 / (v * 60) : 1000);
     return pace;
   }
 
@@ -471,6 +461,15 @@ class Map extends React.Component {
     if (!latlng || !distance || !time) {
       return;
     }
+
+    const intervals = this.getIntervals();
+    let span = undefined;
+    if (intervals && intervals.length > 3) {
+      span = 20;
+    }
+    if (this.state.activity.type === 'Walk') {
+      span = 40;
+    }
     
     let datapoints = [];
     let col = null;
@@ -481,15 +480,9 @@ class Map extends React.Component {
       smooth = 0.8;
       colourFn = walkingPaceColor;
     }
+    let pacedata = this.getPaceData(span);
     for (let i=0; i<latlng.data.length; ++i) {
-      let j = i - 40;
-      if (j < 0) {
-        datapoints.push(latlng.data[i]);
-        continue;
-      }
-      let t = time.data[i] - time.data[j];
-      let d = distance.data[i] - distance.data[j];
-      let pace = d > 0 ? (t / 60)/(d / 1609.34) : 1000;
+      let pace = pacedata[i];
       let icol = colourFn(pace);
       if (col === null) {
         col = icol;
