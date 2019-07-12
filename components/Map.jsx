@@ -46,6 +46,9 @@ class Map extends React.Component {
     }
     // Create graph
     this.graph = new Graph('graph');
+    this.dynamic_layer = L.layerGroup().addTo(this.map);
+    this.graph.moveHook = this.dynamicMove.bind(this);
+    this.graph.outHook = this.dynamicClear.bind(this);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -660,6 +663,27 @@ class Map extends React.Component {
         nextMarker += interval;
       }
     }
+  }
+
+  dynamicMove(xpos) {
+    this.dynamic_layer.clearLayers();
+    const latlng = this.getStream('latlng');
+    let xstream;
+    if (this.graph.xlabel == 'distance') {
+      xstream = this.getStream('distance');
+    } else {
+      xstream = this.getStream('time');
+    }
+    for (let i=0;i<xstream.data.length; ++i) {
+      if (xstream.data[i] >= xpos) {
+        L.circleMarker(latlng.data[i], {radius: 3}).addTo(this.dynamic_layer);
+        break;
+      }
+    }
+  }
+
+  dynamicClear() {
+    this.dynamic_layer.clearLayers();
   }
 }
 
