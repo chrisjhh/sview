@@ -6,7 +6,7 @@ import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
 import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, colorchart } from '../lib/colours';
-import { hms } from '../lib/duration';
+import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
 
 // Allow console log messages for now
@@ -108,7 +108,10 @@ class Map extends React.Component {
         <div className="mapoptions">
           {controls}
         </div>
-        <canvas id="graph" width="600" height="150"></canvas>
+        <span className="graphbox" width="600" height="150">
+          <canvas id="graph" width="600" height="150"></canvas>
+          <div id="graphdetails" className="graphdetails">Some text</div>
+        </span>
       </div>
     );
   }
@@ -665,7 +668,7 @@ class Map extends React.Component {
     }
   }
 
-  dynamicMove(xpos) {
+  dynamicMove(xpos,pos) {
     this.dynamic_layer.clearLayers();
     const latlng = this.getStream('latlng');
     let xstream;
@@ -674,16 +677,59 @@ class Map extends React.Component {
     } else {
       xstream = this.getStream('time');
     }
-    for (let i=0;i<xstream.data.length; ++i) {
+    let i = 0;
+    for (i=0;i<xstream.data.length; ++i) {
       if (xstream.data[i] >= xpos) {
         L.circleMarker(latlng.data[i], {radius: 3}).addTo(this.dynamic_layer);
         break;
       }
     }
+    let details = document.getElementById('graphdetails');
+    details.style.visibility = 'visible';
+    if (pos.x + details.clientWidth + 20 > this.graph.width) {
+      details.style.left = 'auto';
+      details.style.right = `${this.graph.width - pos.x + 5}px`;
+    } else {
+      details.style.left = `${pos.x + 5}px`;
+      details.style.right = 'auto';
+    }
+    details.innerHTML = this.details(i);
   }
 
   dynamicClear() {
     this.dynamic_layer.clearLayers();
+    let details = document.getElementById('graphdetails');
+    details.style.visibility = 'hidden';
+  }
+
+  details(pos) {
+    let html = '';
+    let dist = this.getStream('distance');
+    if (dist) {
+      let val = dist.data[pos];
+      if (this.state.activity.distance < 1609) {
+        html += `Distance: ${val}m`;
+      } else {
+        html += `Distance: ${(val/1609.34).toFixed(1)} miles`;
+      }
+    }
+    let t = this.getStream('time');
+    if (t) {
+      if (html) {
+        html += '<br/>';
+      }
+      let val = t.data[pos];
+      html += `Time: ${duration(val)}`;
+    }
+    let p = this.getPaceData();
+    if (p) {
+      if (html) {
+        html += '<br/>';
+        let val = p[pos];
+        html += `Pace: ${duration(val * 60)}/mi`;
+      }
+    }
+    return html;
   }
 }
 
