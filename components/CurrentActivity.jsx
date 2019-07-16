@@ -9,7 +9,7 @@ const CurrentActivity = props => (
   <div className='currentactivity'>
     <FitbitAuthenticationLink/>
     <div className='titlebar'>
-      <a href={props.activity ? 'https://www.strava.com/activities/' + props.activity.id : '.'}>
+      <a href={props.activity ? 'https://www.strava.com/activities/' + props.activity.id : '.'} target='_blank' rel='noopener noreferrer'>
         <span className='title'>{props.activity ? props.activity.name : '...'}</span>
         <span className='date'>{props.activity ? dateFormat(props.activity.start_date) : ''}</span>
       </a>

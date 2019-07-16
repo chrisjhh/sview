@@ -725,9 +725,30 @@ class Map extends React.Component {
     if (p) {
       if (html) {
         html += '<br/>';
-        let val = p[pos];
-        html += `Pace: ${duration(val * 60)}/mi`;
       }
+      let val = p[pos];
+      html += `Pace: ${duration(val * 60)}/mi`;
+    }
+    let hr = this.getStream('heartrate');
+    if (hr) {
+      if (html) {
+        html += '<br/>';
+      }
+      let j = pos;
+      while(j >= 0 && hr.data[j] === null) {
+        // Data from fitbit includes nulls so wind back
+        --j;
+      }
+      let val = hr.data[j];
+      html += `Heartrate: ${val ? val : '-'}bpm`;
+    }
+    let cad = this.getStream('cadence');
+    if (cad) {
+      if (html) {
+        html += '<br/>';
+      }
+      let val = cad.data[pos];
+      html += `Cadence: ${val * 2}`;
     }
     return html;
   }
