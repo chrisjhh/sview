@@ -5,9 +5,10 @@ import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
-import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, colorchart } from '../lib/colours';
+import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, inclinationColor, colorchart } from '../lib/colours';
 import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
+import { inclination } from '../lib/inclination';
 
 // Allow console log messages for now
 /*eslint no-console: off*/
@@ -327,6 +328,7 @@ class Map extends React.Component {
         xdata = this.getStream('distance');
         this.graph.setXLabels('distance');
         ydata = this.getStream('altitude');
+        //ydata = inclination(xdata.data,ydata.data);
         break;
       default:
         console.log('Unknown view option:', this.view);
@@ -371,6 +373,9 @@ class Map extends React.Component {
             this.graph.colourGraph(cadenceColor,2);
           }
           break;
+        case 'inclination':
+          this.graph.colourGraph(this.inclinationColorFn(), 0);
+          break;
         case 'efficiency':
           this.graph.colourGraph(e => efficiencyColor(-e), 60);
           break;
@@ -383,6 +388,16 @@ class Map extends React.Component {
     } catch(err) {
       console.log(err);
     }
+  }
+
+  inclinationColorFn() {
+    let dist = this.getStream('distance');
+    let alt = this.getStream('altitude');
+    let inc = inclination(dist.data,alt.data);
+    function colourFn(y,i) {
+      return inclinationColor(inc[i]);
+    } 
+    return colourFn;
   }
 
   displayRoute() {
@@ -571,68 +586,15 @@ class Map extends React.Component {
     if (!latlng || !distance || !altitude) {
       return;
     }
-    const color = function(inc) {
-      if (inc > 12) {
-        return colorchart[0];
-      }
-      if (inc > 9) {
-        return colorchart[1];
-      }
-      if (inc > 7) {
-        return colorchart[2];
-      }
-      if (inc > 5) {
-        return colorchart[3];
-      }
-      if (inc > 3) {
-        return colorchart[4];
-      }
-      if (inc > 1) {
-        return colorchart[5];
-      }
-      if (inc > -1) {
-        return colorchart[6];
-      }
-      if (inc > -3) {
-        return colorchart[7];
-      }
-      if (inc > -5) {
-        return colorchart[8];
-      }
-      if (inc > -7) {
-        return colorchart[9];
-      }
-      if (inc > -9) {
-        return colorchart[10];
-      }
-      if (inc > -11) {
-        return colorchart[11];
-      }
-      return colorchart[12];
-    };
+    const inc = inclination(distance.data,altitude.data);
     let datapoints = [];
     let col = null;
-    let lastinc = null;
-    let smooth = 0.5;
     for (let i=0; i<latlng.data.length; ++i) {
-      let j = i - 4;
-      let k = i + 4;
-      if (j < 0 || k >= latlng.data.length) {
-        datapoints.push(latlng.data[i]);
-        continue;
-      }
-      let d = distance.data[k] - distance.data[j];
-      let h = altitude.data[k] - altitude.data[j];
-      let inc = h * 100 / d;
-      let icol = color(inc);
+      let icol = inclinationColor(inc[i]);
       if (col === null) {
         col = icol;
-        lastinc = inc;
       }
       if (icol === col) {
-        datapoints.push(latlng.data[i]);
-        lastinc = inc;
-      } else if (Math.abs(inc - lastinc) < smooth) {
         datapoints.push(latlng.data[i]);
       } else {
         if (datapoints.length > 0) {
@@ -642,7 +604,6 @@ class Map extends React.Component {
         datapoints = [];
         datapoints.push(latlng.data[i]);
         col = icol;
-        lastinc = inc;
       }
     }
     if (datapoints.length > 1) {
@@ -749,6 +710,15 @@ class Map extends React.Component {
       }
       let val = cad.data[pos];
       html += `Cadence: ${val * 2}`;
+    }
+    let alt = this.getStream('altitude');
+    if (alt && dist) {
+      let inc = inclination(dist.data,alt.data);
+      if (html) {
+        html += '<br/>';
+      }
+      let val = inc[pos];
+      html += `Inclination: ${val.toFixed(2)}%`;
     }
     return html;
   }
