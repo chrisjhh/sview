@@ -718,7 +718,7 @@ class Map extends React.Component {
         html += '<br/>';
       }
       let val = inc[pos];
-      html += `Inclination: ${val.toFixed(2)}%`;
+      html += `Inclination: ${val.toFixed(1)}%`;
     }
     return html;
   }
