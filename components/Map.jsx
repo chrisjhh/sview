@@ -328,6 +328,7 @@ class Map extends React.Component {
         xdata = this.getStream('distance');
         this.graph.setXLabels('distance');
         ydata = this.getStream('altitude');
+        this.graph.setYLabels('altitude');
         //ydata = inclination(xdata.data,ydata.data);
         break;
       default:
