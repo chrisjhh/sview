@@ -143,14 +143,18 @@ class Map extends React.Component {
     )
       .then(response =>{
         const series = response['activities-heart-intraday'];
+        //console.log(series);
         if (!series) {
           return;
         }
-        let times = series.dataset.map(x => hms(x.time));
         const start = new Date(this.state.activity.start_date);
         const offset = start.getHours() * 3600 + start.getMinutes() * 60 + start.getSeconds();
-        times = times.map(t => t - offset);
-        const values = series.dataset.map(x => x.value);
+        let data = series.dataset.map(x => ({time: hms(x.time) - offset, value: x.value}));
+        // Remove preceeding time data from start of first minute
+        // and any excess time from the end
+        data = data.filter(x => x.time >= 0 && x.time <= this.state.activity.elapsed_time);
+        let times = data.map(x => x.time);
+        const values = data.map(x => x.value);
         const timeStream = this.getStream('time');
         const newStreams = [...this.state.streams];
         if (!timeStream) {
@@ -159,6 +163,7 @@ class Map extends React.Component {
           newStreams.push({type : 'heartrate', data : values});
         } else {
           // We want to insert the data we have got
+          //console.log('heartrate',times,values);
           const hrStream = {type : 'heartrate', data : []};
           for (let i = 0; i < timeStream.data.length; ++i) {
             let found = false;
@@ -351,6 +356,11 @@ class Map extends React.Component {
           this.graph.min_y = Math.max(this.graph.min_y, -60);
         } else {
           this.graph.min_y = Math.max(this.graph.min_y, -12);
+        }
+        break;
+      case 'hr':
+        if (this.state.activity.type === 'Run') {
+          this.graph.min_y = Math.max(this.graph.min_y, 100);
         }
         break;
     }
