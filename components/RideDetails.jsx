@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
 import XPoints from './XPoints';
+import Cadence from './Cadence';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -15,6 +16,7 @@ const RideDetails = props => (
     <span className='duration'>{duration(props.activity.elapsed_time)}</span>
     <HeartRate  activity={props.activity}/>
     <XPoints activity={props.activity}/>
+    <Cadence activity={props.activity}/>
   </span>
 );
 

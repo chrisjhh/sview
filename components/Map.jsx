@@ -316,6 +316,9 @@ class Map extends React.Component {
         this.graph.setXLabels('distance');
         this.graph.setYLabels('pace');
         ydata = this.getPaceData(span);
+        if (this.state.activity.type === 'Swim') {
+          ydata = ydata.map(pace => pace/17.6); // -> min/100yd
+        }
         if (ydata) {
           ydata = ydata.map(a => -a);
         }
@@ -354,6 +357,8 @@ class Map extends React.Component {
       case 'pace':
         if (this.state.activity.type === 'Walk') {
           this.graph.min_y = Math.max(this.graph.min_y, -60);
+        } else if (this.state.activity.type === 'Swim') {
+          this.graph.min_y = Math.max(this.graph.min_y, -5);
         } else {
           this.graph.min_y = Math.max(this.graph.min_y, -12);
         }
@@ -370,6 +375,8 @@ class Map extends React.Component {
         case 'pace':
           if (this.state.activity.type === 'Walk') {
             this.graph.colourGraph(pace => walkingPaceColor(-pace),1.0);
+          } else if (this.state.activity.type === 'Swim') {
+            this.graph.colourGraph(pace => paceColor(-pace*4),0.1);
           } else {
             this.graph.colourGraph(pace => paceColor(-pace),0.4);
           }
