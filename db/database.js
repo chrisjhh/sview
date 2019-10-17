@@ -780,8 +780,8 @@ export const row_to_strava_run = function(row) {
     average_heartrate : row.average_heartrate,
     max_heartrate : row.max_heartrate,
     average_cadence : row.average_cadence,
-    start_latlng : [row.start_latlng.x, row.start_latlng.y],
-    end_latlng : [row.end_latlng.x, row.end_latlng.y]
+    start_latlng : row.start_latlng ? [row.start_latlng.x, row.start_latlng.y] : null,
+    end_latlng : row.end_latlng ? [row.end_latlng.x, row.end_latlng.y] : null
   };
   return data;
 };
