@@ -3,14 +3,16 @@
 // Allow console logs from server script
 /*eslint no-console: "off" */
 import * as strava from './lib/cached_strava';
+import * as strava_auth from './lib/strava_auth';
 import { cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
-import { Database, row_to_strava_run } from './db/database';
+import { Database, row_to_strava_run, strava_activity_to_row } from './db/database';
 import { Routes } from './lib/routes';
 import { getWeather } from './lib/weather';
 import { redirect_uri } from './lib/fitbit_client_data';
 import * as fitbitToken from './lib/fitbit_token';
 import * as fitbit from './lib/fitbit';
+import { useToken } from './lib/strava';
 
 const express = require('express');
 const path = require('path');
@@ -77,15 +79,30 @@ app.get('/compiled/bundle.js', (req,res) => {
 app.use('/styles', express.static('styles'));
 app.use('/img', express.static('img'));
 
+// strava authentication
+app.get('/api/strava/auth', (req,res) => {
+  const code = req.query.code;
+  strava_auth.requestToken(code)
+    .then(() => res.redirect('/'))
+    .catch(err => {
+      console.log(err);
+      res.redirect('/');
+    });
+});
+const authenticate = () =>
+  strava_auth.getToken()
+    .then(useToken);
 
 // Cached strava API interface
 app.get('/api/v3/athlete', (req,res) => {
-  strava.getAthlete()
+  authenticate()
+    .then(() => strava.getAthlete())
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athlete/activities', (req,res) => {
-  strava.getActivities(Object.keys(req.query).length ? req.query : null)
+  authenticate()
+    .then(() => strava.getActivities(Object.keys(req.query).length ? req.query : null))
     .then(data => {
       if (db_connected) {
         db.updateRunData(data)
@@ -93,30 +110,41 @@ app.get('/api/v3/athlete/activities', (req,res) => {
       }
       return res.json(data);
     })
+    .catch(err => {
+      if (err.errors) {
+        return res.json(err);
+      }
+      return Promise.reject(err);
+    })
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/athletes/:id/stats', (req,res) => {
-  strava.getStats(req.params.id, req.query.length ? req.query : null)
+  authenticate()
+    .then(() => strava.getStats(req.params.id, req.query.length ? req.query : null))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/laps', (req,res) => {
-  strava.getLaps(Number(req.params.id))
+  authenticate()
+    .then(() => strava.getLaps(Number(req.params.id)))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/comments', (req,res) => {
-  strava.getComments(Number(req.params.id))
+  authenticate()
+    .then(() => strava.getComments(Number(req.params.id)))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/kudos', (req,res) => {
-  strava.getKudos(Number(req.params.id))
+  authenticate()
+    .then(() => strava.getKudos(Number(req.params.id)))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 app.get('/api/v3/activities/:id/streams', (req,res) => {
-  strava.getStreams(Number(req.params.id), req.query)
+  authenticate()
+    .then(() => strava.getStreams(Number(req.params.id), req.query))
     .then(data => res.json(data))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });

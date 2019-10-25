@@ -34,6 +34,7 @@ class App extends React.Component {
     this.state = {
       stats : defaultStats,
       activities: defaultActivities,
+      error : null,
       currentActivity: defaultActivities ? defaultActivities[0] : null
     };
   }
@@ -46,7 +47,8 @@ class App extends React.Component {
         <CurrentActivity activity={this.state.currentActivity}/>
         <div className="activities">
           
-          <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)}
+          <ActivityList activities={this.state.activities} selectActivity={this.selectActivity.bind(this)} 
+            error={this.state.error}
             moreActivities={this.moreActivities.bind(this)}/>
         </div>
         <Attribution/>
@@ -58,11 +60,11 @@ class App extends React.Component {
     // Load data from Strava
     if (!testing) {
       getActivities()
-      //getRunsFromSearch('two castle')
-        .then(data => this.setState({activities: data, currentActivity: data[0]}));
-      getAthlete()
-        .then(data => getStats(data.id))
-        .then(data => this.setState({stats: data}));
+        .then(data => this.setState({activities: data, currentActivity: data[0]}))
+        .catch(e => this.setState({error: e}));
+      //getAthlete()
+      //  .then(data => getStats(data.id))
+      //  .then(data => this.setState({stats: data}));
     }
   }
 
