@@ -4,6 +4,11 @@
         "tslint:recommended"
     ],
     "jsRules": {},
-    "rules": {},
+    "rules": {
+        "only-arrow-functions": false,
+        "quotemark": false,
+        "trailing-comma": false,
+        "object-literal-sort-keys": false
+    },
     "rulesDirectory": []
 }
