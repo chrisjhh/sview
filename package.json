@@ -49,6 +49,7 @@
     "webpack": "^4.39.3"
   },
   "devDependencies": {
+    "@types/node": "^12.12.11",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
@@ -60,6 +61,8 @@
     "mocha": "^5.2.0",
     "path": "^0.12.7",
     "sinon": "^6.3.5",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2",
     "webpack-cli": "^3.3.8"
   }
 }
