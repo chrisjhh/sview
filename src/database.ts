@@ -1,6 +1,9 @@
 import 'fs';
 import 'path';
-import {Client, Pool} from 'pg';
+import {Client, Pool, PoolConfig} from 'pg';
+import { StavaRunData } from './StravaRunData';
+import { DBRunData } from './DBRunData';
+import { ResolveOptions, resolve } from 'dns';
 
 const point = function(arr: null|number[]) {
   if (arr == null) {
@@ -16,7 +19,7 @@ type ConfigOptions = {
   database?: string
 };
 
-const defaults: ConfigOptions = {
+const defaults: PoolConfig = {
   host: 'localhost',
   port: 5432,
   user: 'postgres',
@@ -25,11 +28,12 @@ const defaults: ConfigOptions = {
 
 export class Database {
 
-  protected configuration: ConfigOptions;
+  protected configuration: PoolConfig;
   protected pool: Pool;
   protected qi: Client|Pool;
   protected savepoint_stack: string[];
   protected savepoint_id: number;
+  protected _version: string|null = null;
 
   constructor(config: null|ConfigOptions) {
     this.configuration = {...defaults, ...config};
@@ -44,10 +48,9 @@ export class Database {
 
   /**
    * Check if the database server is connected
-   * @returns {boolean}
    */
-  connected() {
-    let config = {...this.configuration};
+  public connected(): Promise<boolean> {
+    const config = {...this.configuration};
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
@@ -64,7 +67,7 @@ export class Database {
    * Updates tables if necessary
    * Must be connected
    */
-  async init() {
+  public async init() {
     if (!await this.exists()) {
       // Create the database and the tables
       await this.create();
@@ -76,19 +79,18 @@ export class Database {
 
   /**
    * Check if the database exists
-   * @param {String} db Optional name of database to check. 
    */
-  exists(db = this.configuration.database) {
-    let config = {...this.configuration};
+  public exists(db = this.configuration.database) {
+    const config = {...this.configuration};
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
       .then(() => client.query('SELECT 1 FROM pg_database WHERE datname = $1 LIMIT 1', [db]))
-      .then(res => {
+      .then((res) => {
         client.end();
         return res.rowCount === 1;
       })
-      .catch(err => {
+      .catch((err) => {
         client.end();
         return Promise.reject(err);
       });
@@ -96,9 +98,8 @@ export class Database {
 
   /**
    * Return the version of the run database data structure
-   * @returns {String}
    */
-  version() {
+  public version() {
     // Return the version of the database
     if (this._version) {
       return Promise.resolve(this._version);
@@ -106,7 +107,7 @@ export class Database {
     return this.qi.query(
       'SELECT value FROM properties WHERE key = \'version\' LIMIT 1'
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           this._version = res.rows[0].value;
           return this._version;
@@ -117,14 +118,13 @@ export class Database {
 
   /**
    * Get a value from the property key by key
-   * @param {String} key 
    */
-  property(key) {
+  public property(key: string): Promise<string | null | undefined> {
     return this.qi.query(
       'SELECT value FROM properties WHERE key = $1 LIMIT 1',
       [key]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           return res.rows[0].value;
         }
@@ -135,16 +135,14 @@ export class Database {
   /**
    * Set a value in the properties table
    * Either by inserting a new row or updating the existing one
-   * @param {String} key 
-   * @param {String} value 
    */
-  setProperty(key,value) {
+  public setProperty(key: string, value: string) {
     return this.property(key)
-      .then(oldValue => {
+      .then((oldValue) => {
         if (oldValue === undefined) {
           return this.qi.query(
             'INSERT INTO properties (key,value) values ($1,$2)',
-            [key,value]
+            [key, value]
           );
         } else {
           if (key === 'version') {
@@ -152,7 +150,7 @@ export class Database {
           }
           return this.qi.query(
             'UPDATE properties SET value = $2 WHERE key = $1',
-            [key,value]
+            [key, value]
           );
         }
       });
@@ -161,16 +159,19 @@ export class Database {
   /**
    * Creates the database
    */
-  create(db = this.configuration.database) {
+  public create(db = this.configuration.database) {
+    if (!db) {
+      throw new Error('No database specified to create()');
+    }
     if (!/^[a-z0-9_]+$/.test(db)) {
       throw new Error(`Invalid database name: ${db}`);
     }
-    let config = {...this.configuration};
+    const config = {...this.configuration};
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
       .then(() => client.query(`CREATE DATABASE ${db}`))
-      .then(res => {
+      .then((res) => {
         client.end();
         if (db === this.configuration.database) {
           this.disconnect();
@@ -179,7 +180,7 @@ export class Database {
         }
         return res.rowCount === 1;
       })
-      .catch(err => {
+      .catch((err) => {
         client.end();
         return Promise.reject(err);
       });
@@ -187,16 +188,18 @@ export class Database {
 
   /**
    * Drops the database
-   * @param {String} db Optional database to drop
    */
-  drop(db = this.configuration.database) {
+  public drop(db = this.configuration.database) {
+    if (!db) {
+      throw new Error('No database specified to drop()');
+    }
     if (['running', 'postgres'].includes(db)) {
       throw new Error('Trying to drop main database');
     }
     if (!/^[a-z0-9_]+$/.test(db)) {
       throw new Error('Invalid database name');
     }
-    let config = {...this.configuration};
+    const config = {...this.configuration};
     config.database = 'postgres';
     const client = new Client(config);
     return client.connect()
@@ -206,11 +209,11 @@ export class Database {
         }
       })
       .then(() => client.query(`DROP DATABASE ${db}`))
-      .then(res => {
+      .then((res) => {
         client.end();
         return res.rowCount === 1;
       })
-      .catch(err => {
+      .catch((err) => {
         client.end();
         return Promise.reject(err);
       });
@@ -218,10 +221,8 @@ export class Database {
 
   /**
    * Low-level add. Will fail if run already exists in database
-   * @param {Object} data The Strava data for the run to add
-   * @returns {Promise} A promise that resolves to the id if the run was added
    */
-  addRun(data) {
+  public addRun(data: StavaRunData): Promise<number> {
     const isRace = data.workout_type === 1;
     return this.qi.query(
       `INSERT INTO runs (name, start_time, distance, duration, elevation,
@@ -230,12 +231,14 @@ export class Database {
         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
         RETURNING id`,
       [data.name, data.start_date_local, data.distance, data.elapsed_time,
-        data.total_elevation_gain, point(data.start_latlng), 
+        data.total_elevation_gain, point(data.start_latlng),
         point(data.end_latlng),
-        isRace, data.average_heartrate, data.max_heartrate,
+        isRace,
+        data.has_heartrate ? data.average_heartrate : null,
+        data.has_heartrate ? data.max_heartrate : null,
         data.average_cadence, data.id, data.moving_time]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           return res.rows[0].id;
         }
@@ -247,15 +250,13 @@ export class Database {
    * Query the database to see if a run with the same details already exists
    * If it does the data for this run is returned.
    * Only start_date_local is used to fetch the data
-   * @param {Object} data The strava data for the run to fetch
-   * @returns {Promise} A promise that resolves to null or the database row object
    */
-  fetchRun(data) {
+  public fetchRun(data: {start_date_local: string}): Promise<DBRunData | null> {
     return this.qi.query(
       'SELECT * FROM runs WHERE start_time = $1 LIMIT 1',
       [data.start_date_local]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -263,12 +264,12 @@ export class Database {
       });
   }
 
-  fetchRunByStravaID(strava_id) {
+  public fetchRunByStravaID(strava_id: number | string) {
     return this.qi.query(
       'SELECT * FROM runs WHERE strava_id = $1 LIMIT 1',
       [Number(strava_id)]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -276,12 +277,12 @@ export class Database {
       });
   }
 
-  fetchRunByID(id) {
+  public fetchRunByID(id: number) {
     return this.qi.query(
       'SELECT * FROM runs WHERE id = $1 LIMIT 1',
       [Number(id)]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -294,9 +295,9 @@ export class Database {
    * Does nothing if the run does not need updating
    * @param {Object} data The strava data of the run to update
    */
-  updateRun(data) {
+  public updateRun(data: StavaRunData) {
     return this.fetchRun(data)
-      .then(rowData => {
+      .then((rowData) => {
         if (rowData == null) {
           return null;
         }
@@ -309,7 +310,7 @@ export class Database {
             rowData.is_race !== (data.workout_type === 1)) {
           return this.qi.query(
             'UPDATE runs SET name = $1, is_race = $2 WHERE id = $3',
-            [data.name, (data.workout_type == 1), rowData.id]
+            [data.name, (data.workout_type === 1), rowData.id]
           )
             .then(() => true);
         }
@@ -320,10 +321,9 @@ export class Database {
 
   /**
    * Update database from array of strava run data
-   * @param {Array} runs 
    */
-  async updateRunData(runs) {
-    for (let run of runs) {
+  public async updateRunData(runs: StavaRunData[]) {
+    for (const run of runs) {
       if (run.type !== 'Run') {
         continue;
       }
@@ -341,7 +341,7 @@ export class Database {
    * For new run, find the route it belongs to, or create a new route
    * @param {Object} data The strava data for the run to set
    */
-  async setRunAndRoute(data) {
+  public async setRunAndRoute(data: StavaRunData) {
     //console.log('setRunAndRoute');
     await this.startTransaction();
     try {
@@ -379,7 +379,7 @@ export class Database {
           );
         }
       }
-    } catch(err) {
+    } catch (err) {
       await this.abortTransaction();
       throw err;
     }
@@ -388,9 +388,8 @@ export class Database {
 
   /**
    * Find a route matching the run data
-   * @param {Object} data 
    */
-  findRoute(data) {
+  public findRoute(data: StavaRunData) {
     //console.log('findRoute');
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
@@ -407,64 +406,65 @@ export class Database {
           $5 - (5 + elevation * 0.2) 
         AND 
           $5 + (5 + elevation * 0.2)`,
-      [point(data.start_latlng),point(data.end_latlng),
+      [point(data.start_latlng), point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
         data.total_elevation_gain
       ]
     )
-      .then(res => {
+      .then((res) => {
         if (res.rowCount > 1) {
           console.log('More than one route matches run', data.name, data.distance, data.total_elevation_gain);
           return this.mergeRoutes(res);
         }
         return res;
       })
-      .then(res => {
+      .then((res) => {
         if (res.rowCount > 1) {
           let min_difference = null;
           let best_match = null;
-          for (let row of res.rows) {
-            let diff = Math.abs(data.distance - row.distance);
+          for (const row of res.rows as DBRunData[]) {
+            const diff = Math.abs(data.distance - row.distance);
             if (min_difference === null || diff < min_difference) {
               min_difference = diff;
               best_match = row;
             }
           }
-          return best_match.id;
+          return best_match ? best_match.id : null;
         }
         if (res.rowCount === 1) {
-          return res.rows[0].id;
+          const rows = res.rows as DBRunData[];
+          return rows[0].id;
         }
         return null;
       });
   }
 
-  async mergeRoutes(res) {
+  protected async mergeRoutes(res) {
     //console.log('mergeRoutes');
-    let routes = Array.from(res.rows);
+    let routes = Array.from(res.rows) as DBRunData[];
     const merged_routes = [];
-    while(routes.length > 0) {
-      const first = routes.shift();
-      console.log('first',first);
+    while (routes.length > 0) {
+      const first = routes.shift() as DBRunData;
+      console.log('first', first);
       merged_routes.push(first);
       const remaining = Array.from(routes);
       while (remaining.length > 0) {
-        const next = remaining.shift();
-        console.log('next',next); 
+        const next = remaining.shift() as DBRunData;
+        console.log('next', next);
         if (next.start_latlng.x === first.start_latlng.x &&
             next.start_latlng.y === first.start_latlng.y &&
             next.end_latlng.x === first.end_latlng.x &&
             next.end_latlng.y === first.end_latlng.y &&
             Math.abs(next.distance - first.distance) < 250 &&
             Math.abs(next.elevation - first.elevation) < 5 + first.elevation * 0.2) {
-          console.log('Merging routes',first.id,next.id);
+          console.log('Merging routes', first.id, next.id);
           // Remove the route from the array being processed
-          routes = routes.filter(x => x.id !== next.id);
+          routes = routes.filter((x) => x.id !== next.id);
           // Merge the routes in the database
           await this.startTransaction();
           await this.qi.query(
             'UPDATE runs SET route_id = $1 WHERE route_id = $2',
-            [first.id,next.id]
+            [first.id, next.id]
           );
           await this.qi.query(
             'DELETE FROM routes WHERE id = $1',
