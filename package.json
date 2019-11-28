@@ -50,7 +50,7 @@
     "webpack": "^4.39.3"
   },
   "devDependencies": {
-    "@types/node": "^12.12.11",
+    "@types/node": "^12.12.14",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",

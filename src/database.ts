@@ -1,9 +1,10 @@
-import 'fs';
-import 'path';
-import {Client, Pool, PoolConfig} from 'pg';
-import { StavaRunData } from './StravaRunData';
+
+import fs = require('fs');
+import path = require('path');
+import {Client, Pool, PoolConfig, QueryResult, PoolClient} from 'pg';
 import { DBRunData } from './DBRunData';
-import { ResolveOptions, resolve } from 'dns';
+import { StravaRunData } from './StravaRunData';
+import { DBWeatherData, WeatherData } from './WeatherData';
 
 const point = function(arr: null|number[]) {
   if (arr == null) {
@@ -12,12 +13,7 @@ const point = function(arr: null|number[]) {
   return `(${arr[0]},${arr[1]})`;
 };
 
-type ConfigOptions = {
-  host?: string,
-  port?: number,
-  user?: string,
-  database?: string
-};
+type ConfigOptions = PoolConfig;
 
 const defaults: PoolConfig = {
   host: 'localhost',
@@ -29,11 +25,12 @@ const defaults: PoolConfig = {
 export class Database {
 
   protected configuration: PoolConfig;
-  protected pool: Pool;
-  protected qi: Client|Pool;
+  protected pool: Pool | null;
+  protected qi: Client|Pool|PoolClient|null;
   protected savepoint_stack: string[];
   protected savepoint_id: number;
   protected _version: string|null = null;
+  protected savepoint: string | null | undefined = null;
 
   constructor(config: null|ConfigOptions) {
     this.configuration = {...defaults, ...config};
@@ -153,7 +150,8 @@ export class Database {
             [key, value]
           );
         }
-      });
+      })
+      .then((res) => res.rowCount === 1);
   }
 
   /**
@@ -222,7 +220,7 @@ export class Database {
   /**
    * Low-level add. Will fail if run already exists in database
    */
-  public addRun(data: StavaRunData): Promise<number> {
+  public addRun(data: StravaRunData) {
     const isRace = data.workout_type === 1;
     return this.qi.query(
       `INSERT INTO runs (name, start_time, distance, duration, elevation,
@@ -238,7 +236,7 @@ export class Database {
         data.has_heartrate ? data.max_heartrate : null,
         data.average_cadence, data.id, data.moving_time]
     )
-      .then((res) => {
+      .then((res: QueryResult<{id: DBRunData["id"]}>) => {
         if (res.rowCount === 1) {
           return res.rows[0].id;
         }
@@ -251,12 +249,12 @@ export class Database {
    * If it does the data for this run is returned.
    * Only start_date_local is used to fetch the data
    */
-  public fetchRun(data: {start_date_local: string}): Promise<DBRunData | null> {
+  public fetchRun(data: {start_date_local: string}) {
     return this.qi.query(
       'SELECT * FROM runs WHERE start_time = $1 LIMIT 1',
       [data.start_date_local]
     )
-      .then((res) => {
+      .then((res: QueryResult<DBRunData>) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -269,7 +267,7 @@ export class Database {
       'SELECT * FROM runs WHERE strava_id = $1 LIMIT 1',
       [Number(strava_id)]
     )
-      .then((res) => {
+      .then((res: QueryResult<DBRunData>) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -282,7 +280,7 @@ export class Database {
       'SELECT * FROM runs WHERE id = $1 LIMIT 1',
       [Number(id)]
     )
-      .then((res) => {
+      .then((res: QueryResult<DBRunData>) => {
         if (res.rowCount === 1) {
           return res.rows[0];
         }
@@ -295,7 +293,7 @@ export class Database {
    * Does nothing if the run does not need updating
    * @param {Object} data The strava data of the run to update
    */
-  public updateRun(data: StavaRunData) {
+  public updateRun(data: StravaRunData) {
     return this.fetchRun(data)
       .then((rowData) => {
         if (rowData == null) {
@@ -322,7 +320,7 @@ export class Database {
   /**
    * Update database from array of strava run data
    */
-  public async updateRunData(runs: StavaRunData[]) {
+  public async updateRunData(runs: StravaRunData[]) {
     for (const run of runs) {
       if (run.type !== 'Run') {
         continue;
@@ -341,7 +339,7 @@ export class Database {
    * For new run, find the route it belongs to, or create a new route
    * @param {Object} data The strava data for the run to set
    */
-  public async setRunAndRoute(data: StavaRunData) {
+  public async setRunAndRoute(data: StravaRunData) {
     //console.log('setRunAndRoute');
     await this.startTransaction();
     try {
@@ -389,7 +387,7 @@ export class Database {
   /**
    * Find a route matching the run data
    */
-  public findRoute(data: StavaRunData) {
+  public findRoute(data: StravaRunData) {
     //console.log('findRoute');
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
@@ -422,7 +420,7 @@ export class Database {
         if (res.rowCount > 1) {
           let min_difference = null;
           let best_match = null;
-          for (const row of res.rows as DBRunData[]) {
+          for (const row of res.rows) {
             const diff = Math.abs(data.distance - row.distance);
             if (min_difference === null || diff < min_difference) {
               min_difference = diff;
@@ -432,16 +430,16 @@ export class Database {
           return best_match ? best_match.id : null;
         }
         if (res.rowCount === 1) {
-          const rows = res.rows as DBRunData[];
+          const rows = res.rows;
           return rows[0].id;
         }
         return null;
       });
   }
 
-  protected async mergeRoutes(res) {
+  public async mergeRoutes(res: QueryResult<DBRunData>) {
     //console.log('mergeRoutes');
-    let routes = Array.from(res.rows) as DBRunData[];
+    let routes = Array.from(res.rows);
     const merged_routes = [];
     while (routes.length > 0) {
       const first = routes.shift() as DBRunData;
@@ -499,9 +497,9 @@ export class Database {
    * Add weather values associated with a run
    * @param {*} strava_id The strava_id of the run
    * @param {*} data The weather data to add. Must have timestamp
-   * @returns {Number} id of row inserted
+   * @returns {Promise<number>} id of row inserted
    */
-  addWeather(strava_id, data) {
+  public addWeather(strava_id: number, data: WeatherData) {
     return this.qi.query(
       `INSERT INTO weather (strava_id, timestamp, city,
         wind_speed, wind_direction, humidity, dew_point,
@@ -521,7 +519,7 @@ export class Database {
         data.uv, data.weather_description
       ]
     )
-      .then(res => {
+      .then((res: QueryResult<DBWeatherData>) => {
         if (res.rowCount === 1) {
           return res.rows[0].id;
         }
@@ -531,17 +529,17 @@ export class Database {
 
   /**
    * Get the weather data associated with a run
-   * @param {Number} strava_id The strava id of the run 
+   * @param {Number} strava_id The strava id of the run
    * @returns {Array|null} Array of timestamped weather data, or null if no data
    */
-  getWeather(strava_id) {
+  public getWeather(strava_id: number) {
     return this.qi.query(
       'SELECT * FROM weather WHERE strava_id = $1',
       [strava_id]
     )
-      .then(res => {
+      .then((res: QueryResult<DBWeatherData>) => {
         if (res.rowCount > 0) {
-          return res.rows.map(x => {
+          return res.rows.map((x) => {
             x.strava_id = Number(x.strava_id);
             return x;
           });
@@ -554,7 +552,7 @@ export class Database {
    * Create a route from a run
    * @param {Object} data The strava data for the run to use to create the route
    */
-  createRoute(data) {
+  public createRoute(data: StravaRunData) {
     //console.log('createRoute');
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
@@ -569,7 +567,7 @@ export class Database {
       [data.distance, data.total_elevation_gain,
         point(data.start_latlng), point(data.end_latlng)]
     )
-      .then(res => {
+      .then((res: QueryResult<DBRunData>) => {
         if (res.rowCount === 1) {
           return res.rows[0].id;
         }
@@ -582,14 +580,14 @@ export class Database {
    * @param {String} query The string to search on
    * @returns {Promise} A promise that resolves to null or the database rows
    */
-  search(query) {
+  public search(query: string) {
     if (!query) {
       return Promise.resolve([]);
     }
-    let words = query.split(' ');
-    let conditions = [];
-    let to_match = [];
-    for (let word of words) {
+    const words = query.split(' ');
+    const conditions = [];
+    const to_match = [];
+    for (const word of words) {
       if (word.toLowerCase() === 'race') {
         conditions.push('(name ILIKE \'%race%\' OR is_race)');
       } else if (word.match(/^20\d{2}/)) {
@@ -607,28 +605,27 @@ export class Database {
     if (to_match.length > 0) {
       conditions.push('name ILIKE $1');
     }
-    let params = to_match.length > 0 ? ['%' + to_match.join(' ') + '%'] : undefined;
+    const params = to_match.length > 0 ? ['%' + to_match.join(' ') + '%'] : undefined;
     //console.log('SELECT * FROM runs WHERE ' + conditions.join(' AND '), params);
     return this.qi.query(
       'SELECT * FROM runs WHERE ' + conditions.join(' AND ') + ' ORDER BY start_time DESC LIMIT 20',
       params
     )
-      .then(res => res.rows);
+      .then((res: QueryResult<DBRunData>) => res.rows);
 
   }
 
-
-  tableExists(tableName) {
+  public tableExists(tableName: string) {
     return this.qi.query(
       'SELECT 1 FROM pg_tables WHERE schemaname = \'public\' AND tablename = $1',
       [tableName]
     )
-      .then(res => {
+      .then((res) => {
         return res.rowCount === 1;
       });
   }
 
-  async createTables() {
+  public async createTables() {
     await this.startTransaction();
     try {
       await this._execSQL('properties.sql');
@@ -636,32 +633,32 @@ export class Database {
       await this._execSQL('runs.sql');
       await this._execSQL('weather.sql');
       await this.setProperty('version', '1.2');
-    } catch(err) {
+    } catch (err) {
       await this.abortTransaction();
       throw err;
     }
     await this.endTransaction();
   }
 
-  _execSQL(file) {
+  public _execSQL(file: string) {
     return new Promise((resolve, reject) => {
     // Only exec files in the current directory
       fs.readdir(__dirname, (err, files) => {
         if (err) {
           return reject(err);
         }
-        const sql_files = files.filter(x => x.endsWith('.sql'));
+        const sql_files = files.filter((x) => x.endsWith('.sql'));
         if (!sql_files.includes(file)) {
           return reject(new Error(`No such sql file ${file}`));
         }
-        fs.readFile(path.join(__dirname,file), (err, buffer) => {
-          if (err) {
-            return reject(err);
+        fs.readFile(path.join(__dirname, file), (err2, buffer) => {
+          if (err2) {
+            return reject(err2);
           }
           const sql = buffer.toString();
-          this.qi.query(sql, (err, res) => {
-            if (err) {
-              return reject(err);
+          this.qi.query(sql, (err3, res) => {
+            if (err3) {
+              return reject(err3);
             }
             return resolve(res);
           });
@@ -670,8 +667,7 @@ export class Database {
     });
   }
 
-
-  startTransaction() {
+  public startTransaction() {
     //console.log('startTransaction');
     if (this.qi !== this.pool) {
       // Transaction already in progress. Use savepoint
@@ -682,13 +678,13 @@ export class Database {
       return this.qi.query(`SAVEPOINT ${this.savepoint}`);
     }
     return this.pool.connect()
-      .then(client => {
+      .then((client) => {
         this.qi = client;
         return this.qi.query('BEGIN');
       });
   }
 
-  abortTransaction() {
+  public abortTransaction() {
     //console.log('abortTransaction');
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
@@ -700,14 +696,14 @@ export class Database {
     }
     return this.qi.query('ROLLBACK')
       .then(() => {
-        const client = this.qi;
+        const client = this.qi as PoolClient;
         this.qi = this.pool;
         this.savepoint_id = 0;
         client.release();
       });
   }
 
-  endTransaction() {
+  public endTransaction() {
     //console.log('endTransaction');
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
@@ -718,14 +714,14 @@ export class Database {
     }
     return this.qi.query('COMMIT')
       .then(() => {
-        const client = this.qi;
+        const client = this.qi as PoolClient;
         this.qi = this.pool;
         this.savepoint_id = 0;
         client.release();
       });
   }
 
-  async updateTables() {
+  public async updateTables() {
     const version = await this.version();
     switch (version) {
       case '1.0':
@@ -765,7 +761,7 @@ export class Database {
    * Disconnect from the database
    * Release any connections
    */
-  disconnect() {
+  public disconnect() {
     if (this.pool != null) {
       const pool = this.pool;
       this.pool = null;
@@ -779,10 +775,10 @@ export class Database {
  * Convert a datbase row representing a run to the equivalent strava data that would
  * be retrieved with activities
  */
-export const row_to_strava_run = function(row) {
-  let data = {
+export const row_to_strava_run = function(row: DBRunData) {
+  const data = {
     id : Number(row.strava_id),
-    type : 'Run',
+    type : "Run" as "Run",
     name : row.name,
     workout_type : row.is_race ? 1 : null,
     elapsed_time : row.duration,
@@ -791,14 +787,26 @@ export const row_to_strava_run = function(row) {
     start_date : row.start_time,
     start_date_local : row.start_time,
     total_elevation_gain : row.elevation,
-    has_heartrate : row.average_heartrate ? true : false,
-    average_heartrate : row.average_heartrate,
-    max_heartrate : row.max_heartrate,
+    has_heartrate : row.average_heartrate ? true as true : false as false,
     average_cadence : row.average_cadence,
-    start_latlng : row.start_latlng ? [row.start_latlng.x, row.start_latlng.y] : null,
-    end_latlng : row.end_latlng ? [row.end_latlng.x, row.end_latlng.y] : null
+    start_latlng : row.start_latlng ? [row.start_latlng.x, row.start_latlng.y] as [number, number] : null,
+    end_latlng : row.end_latlng ? [row.end_latlng.x, row.end_latlng.y] as [number, number] : null
   };
-  return data;
+  let strava_data: StravaRunData;
+  if (row.average_heartrate) {
+    strava_data = {
+      ...data,
+      has_heartrate: true,
+      average_heartrate: row.average_heartrate,
+      max_heartrate: row.max_heartrate
+    };
+  } else {
+    strava_data = {
+      ...data,
+      has_heartrate: false
+    };
+  }
+  return strava_data;
 };
 
 export const strava_activity_to_row = function(data) {
