@@ -1,7 +1,7 @@
 
 import fs = require('fs');
 import path = require('path');
-import {Client, Pool, PoolConfig, QueryResult, PoolClient} from 'pg';
+import {Client, Pool, PoolClient, PoolConfig, QueryResult} from 'pg';
 import { DBRunData } from './DBRunData';
 import { StravaRunData } from './StravaRunData';
 import { DBWeatherData, WeatherData } from './WeatherData';
@@ -98,6 +98,9 @@ export class Database {
    */
   public version() {
     // Return the version of the database
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (this._version) {
       return Promise.resolve(this._version);
     }
@@ -117,6 +120,9 @@ export class Database {
    * Get a value from the property key by key
    */
   public property(key: string): Promise<string | null | undefined> {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT value FROM properties WHERE key = $1 LIMIT 1',
       [key]
@@ -134,8 +140,14 @@ export class Database {
    * Either by inserting a new row or updating the existing one
    */
   public setProperty(key: string, value: string) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.property(key)
       .then((oldValue) => {
+        if (!this.qi) {
+          throw Error("Not connected to database");
+        }
         if (oldValue === undefined) {
           return this.qi.query(
             'INSERT INTO properties (key,value) values ($1,$2)',
@@ -158,6 +170,9 @@ export class Database {
    * Creates the database
    */
   public create(db = this.configuration.database) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (!db) {
       throw new Error('No database specified to create()');
     }
@@ -221,6 +236,9 @@ export class Database {
    * Low-level add. Will fail if run already exists in database
    */
   public addRun(data: StravaRunData) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     const isRace = data.workout_type === 1;
     return this.qi.query(
       `INSERT INTO runs (name, start_time, distance, duration, elevation,
@@ -250,6 +268,9 @@ export class Database {
    * Only start_date_local is used to fetch the data
    */
   public fetchRun(data: {start_date_local: string}) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT * FROM runs WHERE start_time = $1 LIMIT 1',
       [data.start_date_local]
@@ -263,6 +284,9 @@ export class Database {
   }
 
   public fetchRunByStravaID(strava_id: number | string) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT * FROM runs WHERE strava_id = $1 LIMIT 1',
       [Number(strava_id)]
@@ -276,6 +300,9 @@ export class Database {
   }
 
   public fetchRunByID(id: number) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT * FROM runs WHERE id = $1 LIMIT 1',
       [Number(id)]
@@ -294,8 +321,14 @@ export class Database {
    * @param {Object} data The strava data of the run to update
    */
   public updateRun(data: StravaRunData) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.fetchRun(data)
       .then((rowData) => {
+        if (!this.qi) {
+          throw Error("Not connected to database");
+        }
         if (rowData == null) {
           return null;
         }
@@ -328,7 +361,9 @@ export class Database {
       try {
         await this.setRunAndRoute(run);
       } catch (err) {
+        /* tslint:disable-next-line no-console */
         console.log('Error updating run data for run', run);
+        /* tslint:disable-next-line no-console */
         console.log('Erorr:', err);
       }
     }
@@ -340,7 +375,9 @@ export class Database {
    * @param {Object} data The strava data for the run to set
    */
   public async setRunAndRoute(data: StravaRunData) {
-    //console.log('setRunAndRoute');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     await this.startTransaction();
     try {
       const updated = await this.updateRun(data);
@@ -362,10 +399,10 @@ export class Database {
           // Update the route with new average distance and elevation
           await this.qi.query(
             `UPDATE
-              routes 
-            SET 
-              (distance, elevation) = 
-              (SELECT 
+              routes
+            SET
+              (distance, elevation) =
+              (SELECT
                 avg(distance), avg(elevation)
               FROM
                 runs
@@ -388,21 +425,23 @@ export class Database {
    * Find a route matching the run data
    */
   public findRoute(data: StravaRunData) {
-    //console.log('findRoute');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
     }
     return this.qi.query(
-      `SELECT 
+      `SELECT
         *
-      FROM routes 
-      WHERE 
-        start_latlng ~= $1 AND 
-        end_latlng ~= $2 AND 
+      FROM routes
+      WHERE
+        start_latlng ~= $1 AND
+        end_latlng ~= $2 AND
         distance BETWEEN $3 AND $4 AND
-        elevation BETWEEN 
-          $5 - (5 + elevation * 0.2) 
-        AND 
+        elevation BETWEEN
+          $5 - (5 + elevation * 0.2)
+        AND
           $5 + (5 + elevation * 0.2)`,
       [point(data.start_latlng), point(data.end_latlng),
         (data.distance - 250), (data.distance + 250),
@@ -411,6 +450,7 @@ export class Database {
     )
       .then((res) => {
         if (res.rowCount > 1) {
+          /* tslint:disable-next-line no-console */
           console.log('More than one route matches run', data.name, data.distance, data.total_elevation_gain);
           return this.mergeRoutes(res);
         }
@@ -438,16 +478,20 @@ export class Database {
   }
 
   public async mergeRoutes(res: QueryResult<DBRunData>) {
-    //console.log('mergeRoutes');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     let routes = Array.from(res.rows);
     const merged_routes = [];
     while (routes.length > 0) {
       const first = routes.shift() as DBRunData;
+      /* tslint:disable-next-line no-console */
       console.log('first', first);
       merged_routes.push(first);
       const remaining = Array.from(routes);
       while (remaining.length > 0) {
         const next = remaining.shift() as DBRunData;
+        /* tslint:disable-next-line no-console */
         console.log('next', next);
         if (next.start_latlng.x === first.start_latlng.x &&
             next.start_latlng.y === first.start_latlng.y &&
@@ -455,6 +499,7 @@ export class Database {
             next.end_latlng.y === first.end_latlng.y &&
             Math.abs(next.distance - first.distance) < 250 &&
             Math.abs(next.elevation - first.elevation) < 5 + first.elevation * 0.2) {
+          /* tslint:disable-next-line no-console */
           console.log('Merging routes', first.id, next.id);
           // Remove the route from the array being processed
           routes = routes.filter((x) => x.id !== next.id);
@@ -470,10 +515,10 @@ export class Database {
           );
           await this.qi.query(
             `UPDATE
-              routes 
-            SET 
-              (distance, elevation) = 
-              (SELECT 
+              routes
+            SET
+              (distance, elevation) =
+              (SELECT
                 avg(distance), avg(elevation)
               FROM
                 runs
@@ -500,6 +545,9 @@ export class Database {
    * @returns {Promise<number>} id of row inserted
    */
   public addWeather(strava_id: number, data: WeatherData) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       `INSERT INTO weather (strava_id, timestamp, city,
         wind_speed, wind_direction, humidity, dew_point,
@@ -533,6 +581,9 @@ export class Database {
    * @returns {Array|null} Array of timestamped weather data, or null if no data
    */
   public getWeather(strava_id: number) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT * FROM weather WHERE strava_id = $1',
       [strava_id]
@@ -553,13 +604,15 @@ export class Database {
    * @param {Object} data The strava data for the run to use to create the route
    */
   public createRoute(data: StravaRunData) {
-    //console.log('createRoute');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (!data.distance || !data.start_latlng || !data.end_latlng) {
       return Promise.resolve(null);
     }
     return this.qi.query(
-      `INSERT INTO 
-        routes 
+      `INSERT INTO
+        routes
         (distance, elevation, start_latlng, end_latlng)
       VALUES
         ($1, $2, $3, $4)
@@ -581,6 +634,9 @@ export class Database {
    * @returns {Promise} A promise that resolves to null or the database rows
    */
   public search(query: string) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (!query) {
       return Promise.resolve([]);
     }
@@ -606,7 +662,6 @@ export class Database {
       conditions.push('name ILIKE $1');
     }
     const params = to_match.length > 0 ? ['%' + to_match.join(' ') + '%'] : undefined;
-    //console.log('SELECT * FROM runs WHERE ' + conditions.join(' AND '), params);
     return this.qi.query(
       'SELECT * FROM runs WHERE ' + conditions.join(' AND ') + ' ORDER BY start_time DESC LIMIT 20',
       params
@@ -616,6 +671,9 @@ export class Database {
   }
 
   public tableExists(tableName: string) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return this.qi.query(
       'SELECT 1 FROM pg_tables WHERE schemaname = \'public\' AND tablename = $1',
       [tableName]
@@ -641,6 +699,9 @@ export class Database {
   }
 
   public _execSQL(file: string) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     return new Promise((resolve, reject) => {
     // Only exec files in the current directory
       fs.readdir(__dirname, (err, files) => {
@@ -652,6 +713,9 @@ export class Database {
           return reject(new Error(`No such sql file ${file}`));
         }
         fs.readFile(path.join(__dirname, file), (err2, buffer) => {
+          if (!this.qi) {
+            throw Error("Not connected to database");
+          }
           if (err2) {
             return reject(err2);
           }
@@ -668,7 +732,9 @@ export class Database {
   }
 
   public startTransaction() {
-    //console.log('startTransaction');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (this.qi !== this.pool) {
       // Transaction already in progress. Use savepoint
       if (this.savepoint) {
@@ -685,7 +751,9 @@ export class Database {
   }
 
   public abortTransaction() {
-    //console.log('abortTransaction');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
@@ -704,7 +772,9 @@ export class Database {
   }
 
   public endTransaction() {
-    //console.log('endTransaction');
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
     if (this.qi === this.pool) {
       throw new Error('Transaction not in progress');
     }
@@ -733,6 +803,7 @@ export class Database {
         await this._execSQL('weather1.1.sql');
         await this.setProperty('version', '1.1');
         await this.endTransaction();
+        /* tslint:disable-next-line no-console */
         console.log('Updated running database to version 1.1');
         // deliberate fall through
       case '1.1':
@@ -744,6 +815,7 @@ export class Database {
         await this._execSQL('add_weather_description.sql');
         await this.setProperty('version', '1.2');
         await this.endTransaction();
+        /* tslint:disable-next-line no-console */
         console.log('Updated running database to version 1.2');
         break;
       case '1.2':
@@ -809,8 +881,8 @@ export const row_to_strava_run = function(row: DBRunData) {
   return strava_data;
 };
 
-export const strava_activity_to_row = function(data) {
-  let row = {
+export const strava_activity_to_row = function(data: StravaRunData) {
+  const row = {
     strava_id : Number(data.id),
     name : data.name,
     is_race : data.workout_type === 1 ? true : false,
@@ -818,11 +890,11 @@ export const strava_activity_to_row = function(data) {
     distance : data.distance,
     start_time : data.start_date_local,
     elevation : data.total_elevation_gain,
-    average_heartrate : data.average_heartrate,
-    max_heartrate : data.max_heartrate,
+    average_heartrate : data.has_heartrate ? data.average_heartrate : null,
+    max_heartrate : data.has_heartrate ? data.max_heartrate : null,
     average_cadence : data.average_cadence,
-    start_latlng : {x: data.start_latlng[0], y: data.start_latlng[1]},
-    end_latlng : {x: data.end_latlng[0], y: data.end_latlng[1]}
+    start_latlng : data.start_latlng ? {x: data.start_latlng[0], y: data.start_latlng[1]} : null,
+    end_latlng : data.end_latlng ? {x: data.end_latlng[0], y: data.end_latlng[1]} : null
   };
   return row;
 };
