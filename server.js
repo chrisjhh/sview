@@ -6,7 +6,7 @@ import * as strava from './lib/cached_strava';
 import * as strava_auth from './lib/strava_auth';
 import { cachedGetTile } from './lib/mapbox';
 import { FallbackCache } from './lib/fallbackcache';
-import { Database, row_to_strava_run, strava_activity_to_row } from './db/database';
+import { Database, row_to_strava_run, strava_activity_to_row } from './dist/database';
 import { Routes } from './lib/routes';
 import { getWeather } from './lib/weather';
 import { redirect_uri } from './lib/fitbit_client_data';

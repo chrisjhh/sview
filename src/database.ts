@@ -320,7 +320,7 @@ export class Database {
    * Does nothing if the run does not need updating
    * @param {Object} data The strava data of the run to update
    */
-  public updateRun(data: StravaRunData) {
+  public updateRun(data: StravaRunData): Promise<boolean|null> {
     if (!this.qi) {
       return Promise.reject("Not connected to database");
     }
