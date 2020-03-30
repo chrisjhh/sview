@@ -38,6 +38,10 @@
   background: url("../img/run.png") 0px 1px/38px no-repeat, orange;
 }
 
+.virtualrun .type {
+  background: url("../img/run.png") 0px 1px/38px no-repeat, purple;
+}
+
 .swim .type {
   background: url("../img/swim.png") -4px 4px/40px no-repeat, cornflowerblue;
 }
@@ -48,6 +52,10 @@
 
 .ride .type {
   background: url("../img/ride.png") 0px 2px/38px no-repeat, mediumseagreen;
+}
+
+.virtualride .type {
+  background: url("../img/ride.png") 0px 2px/38px no-repeat, purple;
 }
 
 .walk .type {

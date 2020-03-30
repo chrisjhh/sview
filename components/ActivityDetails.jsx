@@ -9,7 +9,9 @@ import WalkDetails from './WalkDetails';
 
 const ActivityDetails = props => {
   switch (props.activity.type) {
-    case 'Run': {
+    case 'Run': 
+    case 'VirtualRun':
+    {
       return (
         <RunDetails activity={props.activity}/>
       );
@@ -24,7 +26,9 @@ const ActivityDetails = props => {
         <WorkoutDetails activity={props.activity}/>
       );
     }
-    case 'Ride' : {
+    case 'Ride' :
+    case 'VirtualRide' :
+    {
       return (
         <RideDetails activity={props.activity}/>
       );
