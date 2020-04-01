@@ -53,7 +53,7 @@ class RunDetails extends React.Component  {
         <XPoints activity={this.state.activity}/>
         <VDot activity={this.state.activity}/>
         <HBPerMile activity={this.state.activity}/>
-        <Weather activity={this.state.activity}/>
+        { this.state.activity.type == 'VirtualRun' ? null : <Weather activity={this.state.activity}/> }
       </span>
     );
   }
