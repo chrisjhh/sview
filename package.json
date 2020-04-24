@@ -13,7 +13,8 @@
     "testdb": "npm run expose-db && npm run test && npm run hide-db",
     "build-container": "npm run build && docker-compose build",
     "deploy": "npm run build-container && docker-compose up -d",
-    "dump-db": "npm run expose-db && babel-node --presets es2015 scripts/setup_db.js && pg_dump --inserts -U postgres temp_db > temp_db.sql && babel-node --presets es2015 scripts/cleanup_db.js && npm run hide-db",
+    "dump-db": "npm run expose-db && pg_dump --inserts -U postgres running > running_db.sql && npm run hide-db",
+    "dump-temp-db": "npm run expose-db && babel-node --presets es2015 scripts/setup_db.js && pg_dump --inserts -U postgres temp_db > temp_db.sql && babel-node --presets es2015 scripts/cleanup_db.js && npm run hide-db",
     "sql": "docker run -it --rm --network=sview_internal postgres psql -h pgdb -U postgres",
     "connect": "docker exec -it sview_sview_1 /bin/bash"
   },
