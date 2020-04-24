@@ -70,6 +70,10 @@
   color: blue;
 }
 
+.manual {
+  font-style: italic;
+}
+
 .weather .icon {
   display: inline-block;
   height: 14px;
