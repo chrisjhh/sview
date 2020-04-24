@@ -3,6 +3,7 @@ import fs = require('fs');
 import path = require('path');
 import {Client, Pool, PoolClient, PoolConfig, QueryResult} from 'pg';
 import { DBRunData } from './DBRunData';
+import { HRData } from './HRData';
 import { StravaRunData } from './StravaRunData';
 import { DBWeatherData, WeatherData } from './WeatherData';
 
@@ -600,6 +601,43 @@ export class Database {
   }
 
   /**
+   * Get the heartrate data manually associated with a run
+   * @param strava_id Id of the strava activity
+   */
+  public getManualHR(strava_id: number): Promise<HRData|null> {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
+    return this.qi.query(
+      'SELECT average_heartrate, max_heartrate FROM manualhr WHERE strava_id = $1',
+      [strava_id]
+    ).then((res: QueryResult<HRData>) => {
+      if (res.rowCount === 1) {
+        return res.rows[0];
+      }
+      return null;
+    });
+  }
+
+  public async setManualHR(strava_id: number, hrdata: HRData) {
+    if (!this.qi) {
+      return Promise.reject("Not connected to database");
+    }
+    const olddata = await this.getManualHR(strava_id);
+    if (!olddata) {
+      await this.qi.query(
+        'INSERT INTO manualhr (strava_id,average_heartrate,max_heartrate) values ($1,$2,$3)',
+        [strava_id, hrdata.average_heartrate, hrdata.max_heartrate]
+      );
+    } else {
+      await this.qi.query(
+        'UPDATE manualhr SET average_heartrate = $2, max_heartrate = $3 WHERE strava_id = $1',
+        [strava_id, hrdata.average_heartrate, hrdata.max_heartrate]
+      );
+    }
+  }
+
+  /**
    * Create a route from a run
    * @param {Object} data The strava data for the run to use to create the route
    */
@@ -631,9 +669,10 @@ export class Database {
   /**
    * Search the database for matching runs
    * @param {String} query The string to search on
+   * @param {String} before The latest start date to match
    * @returns {Promise} A promise that resolves to null or the database rows
    */
-  public search(query: string) {
+  public search(query: string, before?: string) {
     if (!this.qi) {
       return Promise.reject("Not connected to database");
     }
@@ -657,6 +696,9 @@ export class Database {
       } else {
         to_match.push(word);
       }
+    }
+    if (before) {
+      conditions.push(`start_time < '${before}'`);
     }
     if (to_match.length > 0) {
       conditions.push('name ILIKE $1');
@@ -690,7 +732,8 @@ export class Database {
       await this._execSQL('routes.sql');
       await this._execSQL('runs.sql');
       await this._execSQL('weather.sql');
-      await this.setProperty('version', '1.2');
+      await this._execSQL('manualhr.sql');
+      await this.setProperty('version', '1.3');
     } catch (err) {
       await this.abortTransaction();
       throw err;
@@ -703,8 +746,10 @@ export class Database {
       return Promise.reject("Not connected to database");
     }
     return new Promise((resolve, reject) => {
-    // Only exec files in the current directory
-      fs.readdir(__dirname, (err, files) => {
+      // Only exec files in the db directory
+      const parent = path.dirname(__dirname);
+      const db_path = path.join(parent, 'db');
+      fs.readdir(db_path, (err, files) => {
         if (err) {
           return reject(err);
         }
@@ -712,7 +757,7 @@ export class Database {
         if (!sql_files.includes(file)) {
           return reject(new Error(`No such sql file ${file}`));
         }
-        fs.readFile(path.join(__dirname, file), (err2, buffer) => {
+        fs.readFile(path.join(db_path, file), (err2, buffer) => {
           if (!this.qi) {
             throw Error("Not connected to database");
           }
@@ -817,8 +862,12 @@ export class Database {
         await this.endTransaction();
         /* tslint:disable-next-line no-console */
         console.log('Updated running database to version 1.2');
-        break;
+        // deliberate fall through
       case '1.2':
+        await this._execSQL('manualhr.sql');
+        await this.setProperty('version', '1.3');
+        // deliberate fall through
+      case '1.3':
         // This is the current version
         // Everything is OK
         break;

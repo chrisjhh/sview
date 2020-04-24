@@ -5,7 +5,7 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import VDot from './VDot';
 import HBPerMile from './HBPerMile';
-import { getStats } from '../lib/localhost';
+import { getStats, getManualHR } from '../lib/localhost';
 import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
 import Weather from './Weather';
 
@@ -67,8 +67,22 @@ class RunDetails extends React.Component  {
         .catch(err => console.log(err));
       // Get fitbit hr info if no hr data
       if (!this.state.activity.has_heartrate) {
-        addFitbitHeartRateToActivity(this.state.activity)
-          .then(activity => this.setState({activity}))
+        getManualHR(this.state.activity.id)
+          .then((response) => {
+            if (response && response.average_heartrate) {
+              this.setState(
+                {activity: {
+                  ...this.state.activity, 
+                  ...response,
+                  has_heartrate: true,
+                  heartrate_set_manually: true
+                }}
+              );
+            } else {
+              return addFitbitHeartRateToActivity(this.state.activity)
+                .then(activity => this.setState({activity}));
+            }
+          })
           .catch(err => console.log(err));
       }
     }

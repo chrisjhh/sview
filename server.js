@@ -23,6 +23,9 @@ const app = express();
 const port = 7676;
 app.set('PORT', port);
 
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+
 
 // Use a fallback File-System cache for responses from Strava
 const cache = new FallbackCache(path.join(__dirname, 'server', 'cache'));
@@ -152,11 +155,12 @@ app.get('/api/v3/activities/:id/streams', (req,res) => {
 // Search
 app.get('/api/search', (req,res) => {
   let query = req.query.q;
+  let before = req.query.before;
   if (db_connected) {
     if (!query) {
       return res.status(500).send('Required search parameter \'q\' not set');
     }
-    db.search(query)
+    db.search(query,before)
       .then(data => res.json(data.map(row_to_strava_run)))
       .catch(err => res.status(500).send('Internal server error: ' + err));
   } else {
@@ -194,6 +198,29 @@ app.get('/api/weather/:id', (req,res) => {
   }
   getWeather(db,Number(req.params.id))
     .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+
+// Manual HR
+app.get('/api/manualhr/:id', (req,res) => {
+  if (!db_connected) {
+    return res.sendStatus(404);
+  }
+  db.getManualHR(req.params.id)
+    .then(data => res.json(data))
+    .catch(err => res.status(500).send('Internal server error: ' + err));
+});
+
+app.post('/api/manualhr/:id', (req,res) => {
+  if (!db_connected) {
+    return res.sendStatus(404);
+  }
+  const data = {
+    average_heartrate: req.body.average_heartrate,
+    max_heartrate: req.body.max_heartrate
+  };
+  db.setManualHR(req.params.id, data)
+    .then(res.sendStatus(200))
     .catch(err => res.status(500).send('Internal server error: ' + err));
 });
 

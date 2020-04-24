@@ -35,6 +35,7 @@ class App extends React.Component {
       stats : defaultStats,
       activities: defaultActivities,
       error : null,
+      query: null,
       currentActivity: defaultActivities ? defaultActivities[0] : null
     };
   }
@@ -76,14 +77,21 @@ class App extends React.Component {
     const lastActivity = this.state.activities[this.state.activities.length - 1];
     const lastTime = lastActivity.start_date;
     const before = new Date(lastTime);
-    getActivities({before})
-      .then(data => this.setState(
-        {activities: this.state.activities.concat(data)}
-      ));
+    if (this.state.query) {
+      getRunsFromSearch(this.state.query,lastTime)
+        .then(data => this.setState(
+          {activities: this.state.activities.concat(data)}
+        ));
+    } else {
+      getActivities({before})
+        .then(data => this.setState(
+          {activities: this.state.activities.concat(data)}
+        ));
+    }
   }
 
   searchActivities(query) {
-    this.setState({activities: null});
+    this.setState({activities: null, query});
     if (query) {
       getRunsFromSearch(query)
         .then(data => this.setState({activities: data}));

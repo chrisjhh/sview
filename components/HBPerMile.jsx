@@ -17,6 +17,8 @@ const HBPerMile = props => {
   let classes = 'hbpermile';
   if (props.activity.heartrate_from_fitbit) {
     classes += ' fitbit';
+  } else if (props.activity.heartrate_set_manually) {
+    classes += ' manual';
   }
   return (
     <span className={classes} title={'Running efficiency ' + efficiency + ' ♥/mi'}>
