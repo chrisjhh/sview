@@ -169,8 +169,9 @@ app.get('/api/search', (req,res) => {
 });
 
 // Cached Mapbox interface
-app.get('/api.tiles.mapbox.com/v4/:id/:z/:x/:y.png', (req,res) => {
-  cachedGetTile(cache)(req.params.id,req.params.z,req.params.x,req.params.y,req.query)
+app.get('/api.mapbox.com/styles/v1/:id1/:id2/tiles/:z/:x/:y', (req,res) => {
+  const id = `${req.params.id1}/${req.params.id2}`;
+  cachedGetTile(cache)(id,req.params.z,req.params.x,req.params.y,req.query)
     .then(data => {
       res.type('image/png').send(Buffer.from(data, 'base64'));
     })

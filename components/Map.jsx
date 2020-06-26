@@ -28,16 +28,18 @@ class Map extends React.Component {
   componentDidMount()  {
     // Create map
     this.map = L.map('mapid');
-    let mapurl = 'https://api.tiles.mapbox.com/v4';
+    let mapurl = 'https://api.mapbox.com/styles/v1';
     // Check if we are running on local server with its own cache
     if (location.port && !isNaN(Number(location.port)) && 
         Number(location.port) !== 80) {
-      mapurl = '/api.tiles.mapbox.com/v4';
+      mapurl = '/api.mapbox.com/styles/v1';
     }
-    L.tileLayer(`${mapurl}/{id}/{z}/{x}/{y}.png?access_token={accessToken}`, {
+    L.tileLayer(`${mapurl}/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}`, {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+      tileSize: 512,
       maxZoom: 18,
-      id: 'mapbox.streets',
+      zoomOffset: -1,
+      id: 'mapbox/streets-v11',
       accessToken: 'pk.eyJ1IjoiY2hyaXNqaGgiLCJhIjoiY2psZjRqYThwMHFqdTN2b2JyYjBpM2toNyJ9.LLJOL9OCB589_DijIuEj-Q'
     }).addTo(this.map);
     // Add a layer for this disposable details
