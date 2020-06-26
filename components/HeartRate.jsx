@@ -11,7 +11,7 @@ function useForceUpdate(){
 const HeartRate = props => {
   const forceUpdate = useForceUpdate();
   if (!props.activity.has_heartrate) {
-    return (null);
+    return null;
   }
   let classes = 'hr tooltip';
   if (props.activity.heartrate_from_fitbit) {
