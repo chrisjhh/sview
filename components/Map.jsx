@@ -681,7 +681,9 @@ class Map extends React.Component {
     let i = 0;
     for (i=0;i<xstream.data.length; ++i) {
       if (xstream.data[i] >= xpos) {
-        L.circleMarker(latlng.data[i], {radius: 3}).addTo(this.dynamic_layer);
+        if (latlng) {
+          L.circleMarker(latlng.data[i], {radius: 3}).addTo(this.dynamic_layer);
+        }
         break;
       }
     }
@@ -741,7 +743,7 @@ class Map extends React.Component {
         --j;
       }
       let val = hr.data[j];
-      html += `Heartrate: ${val ? val : '-'}bpm`;
+      html += `Heartrate: ${val ? val.toFixed(0) : '-'}bpm`;
     }
     let cad = this.getStream('cadence');
     if (cad) {
@@ -749,7 +751,11 @@ class Map extends React.Component {
         html += '<br/>';
       }
       let val = cad.data[pos];
-      html += `Cadence: ${val * 2}`;
+      if (this.state.activity.type === 'Ride' || this.state.activity.type === 'VirtualRide') {
+        html += `Cadence: ${val}`;
+      } else {
+        html += `Cadence: ${val * 2}`;
+      }
     }
     let alt = this.getStream('altitude');
     if (alt && dist) {
