@@ -4,6 +4,7 @@ import { duration } from '../lib/duration';
 import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import Cadence from './Cadence';
+import TrainingLoad from './TrainingLoad';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -27,7 +28,7 @@ const speed = function(activity) {
   const miles = distance(activity)/1609.34;
   const hours = activity.elapsed_time / 3600;
   return (miles/hours).toFixed(1).toString();
-}
+};
 
 const RideDetails = props => (
   <span className='detail'>
@@ -39,6 +40,7 @@ const RideDetails = props => (
     <HeartRate  activity={props.activity}/>
     <XPoints activity={props.activity}/>
     <Cadence activity={props.activity}/>
+    <TrainingLoad activity={props.activity}/>
   </span>
 );
 

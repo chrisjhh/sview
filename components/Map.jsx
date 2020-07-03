@@ -9,6 +9,7 @@ import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor
 import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
 import { inclination } from '../lib/inclination';
+import KalmanFilter from 'kalmanjs';
 
 // Allow console log messages for now
 /*eslint no-console: off*/
@@ -126,12 +127,21 @@ class Map extends React.Component {
     };
     getStreams(this.state.activity.id, options)
       .then(data => {
+        const hr_list = data.filter(stream => stream.type === 'heartrate');
+        const hr = hr_list.length === 1 ? hr_list[0] : null;
+        if (!hr) {
+          this.loadFitbitHeartRate();
+        } else if(!hr.filtered) {
+          // Do a noise filter on the HR data
+          var kf = new KalmanFilter({R: 0.3, Q: 5});
+          for (let i=0;i<3;++i) {
+            hr.data = hr.data.map((v) => kf.filter(v));
+          }
+          hr.filtered = true;
+        }
         this.setState({streams: data});
         this.fitBounds();
         this.updateAll();
-        if (!this.getStream('heartrate')) {
-          this.loadFitbitHeartRate();
-        }
       })
       .catch(err => 
         console.log('Streams failed to load', err)
