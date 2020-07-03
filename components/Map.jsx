@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
-import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, efficiencyColor, inclinationColor, colorchart } from '../lib/colours';
+import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, ridingCadenceColor, efficiencyColor, inclinationColor, colorchart } from '../lib/colours';
 import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
 import { inclination } from '../lib/inclination';
@@ -311,7 +311,11 @@ class Map extends React.Component {
         break;
       case 'cadence':
         ydata = this.getStream('cadence');
-        this.graph.setYLabels('cadence');
+        if (this.state.activity.type == 'Ride' || this.state.activity.type == 'VirtualRide') {
+          this.graph.setYLabels('ridecadence');
+        } else {
+          this.graph.setYLabels('cadence');
+        }
         break;
       case 'pace':
         xdata = this.getStream('distance');
@@ -352,6 +356,8 @@ class Map extends React.Component {
         if (this.state.activity.type === 'Walk') {
           this.graph.min_y = Math.max(this.graph.min_y, 20);
           this.graph.max_y = Math.min(this.graph.max_y, 90);
+        } else if (this.state.activity.type == 'Ride' || this.state.activity.type == 'VirtualRide') {
+          this.graph.min_y = Math.max(this.graph.min_y, 80);
         } else {
           this.graph.min_y = Math.max(this.graph.min_y, 60);
         }
@@ -389,6 +395,8 @@ class Map extends React.Component {
         case 'cadence':
           if (this.state.activity.type === 'Walk') {
             this.graph.colourGraph(walkingCadenceColor,8);
+          } else if (this.state.activity.type === 'Ride' || this.state.activity.type === 'VirtualRide') {
+            this.graph.colourGraph(ridingCadenceColor,4);
           } else {
             this.graph.colourGraph(cadenceColor,2);
           }
@@ -472,6 +480,8 @@ class Map extends React.Component {
     let colourFn = cadenceColor;
     if (this.state.activity.type === 'Walk') {
       colourFn = walkingCadenceColor;
+    } else if (this.state.activity.type === 'Ride' || this.state.activity.type === 'VirtualRide') {
+      colourFn = ridingCadenceColor;
     }
     
     let datapoints = [];
