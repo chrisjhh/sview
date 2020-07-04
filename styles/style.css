@@ -273,6 +273,7 @@
   left: 333px;
 }
 
+.trainingload .tooltiptext,
 .vdot .tooltiptext {
   width: 120px;
   font-size: 12px;
@@ -280,13 +281,16 @@
   margin-left: -60px;
 }
 
+.trainingload .tooltiptext::before,
 .vdot .tooltiptext::before {
   left: 55px;
 }
+.trainingload .tooltiptext::after,
 .vdot .tooltiptext::after {
   left: 56px;
 }
 
+.trainingload .tooltiptext table,
 .vdot .tooltiptext table {
   margin-left: auto;
   margin-right: auto;
@@ -301,6 +305,7 @@
   font-weight: bold;
   padding-right: 10px;
 }
+
 
 .currentActivity,
 #mapid,

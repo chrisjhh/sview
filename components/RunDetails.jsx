@@ -51,7 +51,6 @@ class RunDetails extends React.Component  {
           </span>
           : null }
         <HeartRate activity={this.state.activity}/>
-        <XPoints activity={this.state.activity}/>
         <VDot activity={this.state.activity}/>
         <HBPerMile activity={this.state.activity}/>
         <TrainingLoad activity={this.state.activity}/>

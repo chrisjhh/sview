@@ -38,7 +38,6 @@ const RideDetails = props => (
       <span className="units">mph</span>
     </span>
     <HeartRate  activity={props.activity}/>
-    <XPoints activity={props.activity}/>
     <Cadence activity={props.activity}/>
     <TrainingLoad activity={props.activity}/>
   </span>
