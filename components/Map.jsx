@@ -367,7 +367,7 @@ class Map extends React.Component {
           this.graph.min_y = Math.max(this.graph.min_y, 20);
           this.graph.max_y = Math.min(this.graph.max_y, 90);
         } else if (this.state.activity.type == 'Ride' || this.state.activity.type == 'VirtualRide') {
-          this.graph.min_y = Math.max(this.graph.min_y, 80);
+          this.graph.min_y = Math.max(this.graph.min_y, 50);
         } else {
           this.graph.min_y = Math.max(this.graph.min_y, 60);
         }

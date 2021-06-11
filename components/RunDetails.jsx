@@ -9,6 +9,7 @@ import { getStats, getManualHR } from '../lib/localhost';
 import { addFitbitHeartRateToActivity } from '../lib/fitbit_activity';
 import Weather from './Weather';
 import TrainingLoad from './TrainingLoad';
+import Power from './Power';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -53,6 +54,7 @@ class RunDetails extends React.Component  {
         <HeartRate activity={this.state.activity}/>
         <VDot activity={this.state.activity}/>
         <HBPerMile activity={this.state.activity}/>
+        <Power activity={this.state.activity}/>
         <TrainingLoad activity={this.state.activity}/>
         { this.state.activity.type == 'VirtualRun' ? null : <Weather activity={this.state.activity}/> }
       </span>

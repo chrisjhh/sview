@@ -5,6 +5,7 @@ import HeartRate from './HeartRate';
 import XPoints from './XPoints';
 import Cadence from './Cadence';
 import TrainingLoad from './TrainingLoad';
+import Power from './Power';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -21,7 +22,7 @@ const distance = function(activity) {
     const c_dist = revolutions * 4.48; // <- HARDCODED value TODO: Replace
     return c_dist;
   }
-  return distance;
+  return a_dist;
 };
 
 const speed = function(activity) {
@@ -40,6 +41,7 @@ const RideDetails = props => (
     <HeartRate  activity={props.activity}/>
     <Cadence activity={props.activity}/>
     <TrainingLoad activity={props.activity}/>
+    <Power activity={props.activity}/>
   </span>
 );
 
