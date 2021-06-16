@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
-import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, ridingCadenceColor, efficiencyColor, inclinationColor, colorchart, cyclingPowerColour } from '../lib/colours';
+import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, ridingCadenceColor, efficiencyColor, inclinationColor, colorchart, cyclingPowerColour, runningPowerColour } from '../lib/colours';
 import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
 import { inclination } from '../lib/inclination';
@@ -420,7 +420,11 @@ class Map extends React.Component {
           }
           break;
         case 'power':
-          this.graph.colourGraph(cyclingPowerColour, 4);
+          if (this.state.activity.type === 'Run') {
+            this.graph.colourGraph(runningPowerColour, 4);
+          } else {
+            this.graph.colourGraph(cyclingPowerColour, 4);
+          }
           break;
         case 'hr':
           this.graph.colourGraph(hrColor,0);
@@ -545,6 +549,9 @@ class Map extends React.Component {
       return;
     }
     let colourFn = cyclingPowerColour;
+    if (this.state.activity.type === 'Run') {
+      colourFn = runningPowerColour;
+    }
     let smooth = 4;
     
     let datapoints = [];
