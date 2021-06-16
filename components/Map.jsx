@@ -5,7 +5,7 @@ import L from 'leaflet';
 import { getStreams } from '../lib/cached_strava';
 import { Graph } from '../lib/graph';
 import { fitbitHeartrate } from '../lib/localhost';
-import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, ridingCadenceColor, efficiencyColor, inclinationColor, colorchart } from '../lib/colours';
+import { paceColor, walkingPaceColor, hrColor, cadenceColor, walkingCadenceColor, ridingCadenceColor, efficiencyColor, inclinationColor, colorchart, cyclingPowerColour } from '../lib/colours';
 import { duration, hms } from '../lib/duration';
 import { velocity } from '../lib/velocity';
 import { inclination } from '../lib/inclination';
@@ -73,7 +73,7 @@ class Map extends React.Component {
   }
 
   render() {
-    const options = ['Route', 'Pace', 'HR', 'Cadence', 'Efficiency', 'Inclination'];
+    const options = ['Route', 'Pace', 'HR', 'Cadence', 'Power', 'Efficiency', 'Inclination'];
     let values = {};
     for (let opt of options) {
       let view = opt.toLowerCase();
@@ -103,6 +103,9 @@ class Map extends React.Component {
     if (!this.getStream('altitude')) {
       values['Inclination']['classes'].push('disabled');
     }
+    if (!this.getStream('watts')) {
+      values['Power']['classes'].push('disabled');
+    }
     const controls = options.map(opt => (
       <span key={opt} className={values[opt].classes.join(' ')} onClick={() => this.setState({view: opt.toLowerCase()})}>{opt}</span>
     ));
@@ -123,7 +126,7 @@ class Map extends React.Component {
   loadStreams() {
     const options = {
       keys_by_type: true,
-      keys: 'cadence,distance,time,heartrate,latlng,altitude'
+      keys: 'cadence,distance,time,heartrate,latlng,altitude,watts'
     };
     getStreams(this.state.activity.id, options)
       .then(data => {
@@ -133,11 +136,21 @@ class Map extends React.Component {
           this.loadFitbitHeartRate();
         } else if(!hr.filtered) {
           // Do a noise filter on the HR data
-          var kf = new KalmanFilter({R: 0.3, Q: 5});
+          const kf = new KalmanFilter({R: 0.3, Q: 5});
           for (let i=0;i<3;++i) {
             hr.data = hr.data.map((v) => kf.filter(v));
           }
           hr.filtered = true;
+        }
+        const power_list = data.filter(stream => stream.type === 'watts');
+        const power = power_list.length === 1 ? power_list[0] : null;
+        if (power && !power.filtered) {
+          // Do a noise filter on the power data
+          const kf = new KalmanFilter({R: 0.3, Q: 5});
+          for (let i=0;i<3;++i) {
+            power.data = power.data.map((v) => kf.filter(v));
+          }
+          power.filtered = true;
         }
         this.setState({streams: data});
         this.fitBounds();
@@ -237,6 +250,9 @@ class Map extends React.Component {
         break;
       case 'pace':
         this.displayPace();
+        break;
+      case 'power':
+        this.displayPower();
         break;
       case 'efficiency':
         this.displayEfficiency();
@@ -339,6 +355,10 @@ class Map extends React.Component {
           ydata = ydata.map(a => -a);
         }
         break;
+      case 'power':
+        ydata = this.getStream('watts');
+        this.graph.setYLabels('power');
+        break;
       case 'efficiency':
         xdata = this.getStream('distance');
         this.graph.setXLabels('distance');
@@ -398,6 +418,9 @@ class Map extends React.Component {
           } else {
             this.graph.colourGraph(pace => paceColor(-pace),0.4);
           }
+          break;
+        case 'power':
+          this.graph.colourGraph(cyclingPowerColour, 4);
           break;
         case 'hr':
           this.graph.colourGraph(hrColor,0);
@@ -508,6 +531,46 @@ class Map extends React.Component {
         datapoints = [];
         datapoints.push(latlng.data[i]);
         col = icol;
+      }
+    }
+    if (datapoints.length > 1) {
+      L.polyline(datapoints, {color: col}).addTo(this.layer);
+    }
+  }
+
+  displayPower() {
+    const latlng = this.getStream('latlng');
+    const power_stream = this.getStream('watts');
+    if (!latlng || !power_stream) {
+      return;
+    }
+    let colourFn = cyclingPowerColour;
+    let smooth = 4;
+    
+    let datapoints = [];
+    let col = null;
+    let lastpower = null;
+    for (let i=0; i<latlng.data.length; ++i) {
+      let power = power_stream.data[i];
+      let icol = colourFn(power);
+      if (col === null) {
+        col = icol;
+        lastpower = power;
+      }
+      if (icol === col) {
+        datapoints.push(latlng.data[i]);
+        lastpower = power;
+      } else if (Math.abs(power - lastpower) < smooth) {
+        datapoints.push(latlng.data[i]);
+      } else {
+        if (datapoints.length > 0) {
+          datapoints.push(latlng.data[i]);
+          L.polyline(datapoints, {color: col}).addTo(this.layer);
+        }
+        datapoints = [];
+        datapoints.push(latlng.data[i]);
+        col = icol;
+        lastpower = power;
       }
     }
     if (datapoints.length > 1) {

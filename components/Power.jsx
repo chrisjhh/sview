@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 
 const Power = props => {
   if (!props.activity.average_watts) {
+    //console.log(props.activity)
     return (null);
   }
   return (
