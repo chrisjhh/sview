@@ -144,7 +144,7 @@ class Map extends React.Component {
         }
         const power_list = data.filter(stream => stream.type === 'watts');
         const power = power_list.length === 1 ? power_list[0] : null;
-        if (power && !power.filtered) {
+        if (power && !power.filtered && this.state.activity.type !== 'Run') {
           // Do a noise filter on the power data
           const kf = new KalmanFilter({R: 0.3, Q: 5});
           for (let i=0;i<3;++i) {
@@ -403,7 +403,7 @@ class Map extends React.Component {
         break;
       case 'hr':
         if (this.state.activity.type === 'Run') {
-          this.graph.min_y = Math.max(this.graph.min_y, 100);
+          this.graph.min_y = Math.max(this.graph.min_y, 80);
         }
         break;
     }
