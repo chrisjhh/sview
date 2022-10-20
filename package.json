@@ -14,7 +14,7 @@
     "build-container": "npm run build && docker-compose build",
     "deploy": "npm run build-container && docker-compose up -d",
     "dump-db": "docker run -it --rm --network=sview_internal postgres pg_dump -h pgdb --inserts -U postgres running > running_db.sql",
-    "restore-db": "docker run -i --rm --network=sview_internal postgres pg_restore -h pgdb -c -C -d postgres -U postgres < running_db.sql",
+    "restore-db": "docker run -i --rm --network=sview_internal postgres psql -h pgdb -d postgres -U postgres -c \"DROP DATABASE running;\" &&  docker run -i --rm --network=sview_internal postgres psql -h pgdb -d postgres -U postgres -c \"CREATE DATABASE running;\" && docker run -i --rm --network=sview_internal postgres psql -h pgdb -d running -U postgres < running_db.sql",
     "dump-temp-db": "npm run expose-db && babel-node --presets es2015 scripts/setup_db.js && pg_dump --inserts -U postgres temp_db > temp_db.sql && babel-node --presets es2015 scripts/cleanup_db.js && npm run hide-db",
     "sql": "docker run -it --rm --network=sview_internal postgres psql -h pgdb -U postgres",
     "connect": "docker exec -it sview_sview_1 /bin/bash"
