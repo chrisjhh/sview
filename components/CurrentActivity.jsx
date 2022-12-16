@@ -3,6 +3,7 @@ import { dateFormat } from '../lib/duration';
 import FitbitAuthenticationLink from './FitbitAuthenticationLink';
 import ErrorBoundary from './ErrorBoundary';
 import Map from './Map';
+import Laps from './Laps';
 import PropTypes from 'prop-types';
 
 const CurrentActivity = props => (
@@ -17,6 +18,7 @@ const CurrentActivity = props => (
     <ErrorBoundary>
       <Map activity={props.activity}/>
     </ErrorBoundary>
+    <Laps activity={props.activity}/>
   </div>
 );
 

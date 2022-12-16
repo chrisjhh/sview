@@ -15,6 +15,10 @@
   cursor: pointer;
 }
 
+.laps {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .activity:hover {
   background-color: aliceblue;
 }
