@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { duration } from '../lib/duration';
 import Activity from './Activity';
 import { getLaps } from '../lib/cached_strava';
+import { paceColor } from '../lib/colours';
 
 const milesOrMetres = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -40,11 +41,13 @@ class Laps extends React.Component {
           <td><span>{l.name}</span></td>
           <td><span className='duration'>{duration(l.elapsed_time)}</span></td>
           <td><span className='distance'>{milesOrMetres(l.distance)}</span></td>
-          { strPace ?
-          <tr><span className='pace'>{strPace}
+          <td>{this.heartRate(l)}</td>
+          <td>{ strPace ?
+          <span className='pace'>{strPace}
             <span className="units">{this.paceUnits()}</span>
-          </span></tr>
-          : null }
+          </span>
+          : null }</td>
+          <td><div className="lapBar">{this.lapBar(l)}</div></td>
         </tr>
         );
         });
@@ -75,6 +78,40 @@ class Laps extends React.Component {
       return "/100yd";
     }
     return "/mi";
+  }
+
+  lapBar(lap) {
+    if (!this.state.laps.maxSpeed) {
+      this.state.laps.maxSpeed = this.state.laps.reduce((val, l) => {
+        if (!l.distance || !l.moving_time) {
+          return val;
+        }
+        const speed = l.distance / l.moving_time;
+        return speed > val ? speed : val;
+      }, 0);
+    }
+    const maxSpeed = this.state.laps.maxSpeed;
+    if (!lap.distance || !lap.moving_time) {
+      return null;
+    }
+    const speed = lap.distance / lap.moving_time;
+    const widthPercent = (speed / maxSpeed * 100).toFixed(2) + "%";
+    const bgCol = paceColor((lap.moving_time/60)/(lap.distance/1609.34));
+    return (
+      <div style={{width: widthPercent, backgroundColor: bgCol, height: "100%" }}></div>
+    );
+  }
+
+  heartRate(lap) {
+    if (!lap.average_heartrate) {
+      return null;
+    }
+    return (
+    <span className="hr" title={'Max HR: ' + Number(lap.max_heartrate).toFixed(0)}>
+      {Number(lap.average_heartrate).toFixed(0)}
+      <span className="units">♥</span>
+    </span>
+    );
   }
 
   componentDidUpdate(prevProps, prevState) {

@@ -46,7 +46,7 @@ let routes = null;
     await db.init();
     routes = new Routes(db);
   } else {
-    console.log('Could not connect to postgres database');
+    console.log(`Could not connect to postgres database ${db.configuration.host}:${db.configuration.port}`);
   }
 })();
 
