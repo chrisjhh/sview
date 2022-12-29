@@ -22,7 +22,8 @@ class Map extends React.Component {
     this.state = {
       activity: props.activity,
       view: 'route',
-      streams: null
+      streams: null,
+      lap: props.lap
     };
   }
 
@@ -57,12 +58,12 @@ class Map extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     // Does the state need to be updated
-    if (this.props.activity !== this.state.activity) {
-      this.setState({activity: this.props.activity});
+    if (this.props.activity !== this.state.activity || this.props.lap !== this.state.lap) {
+      this.setState({activity: this.props.activity, lap: this.props.lap});
     }
     if (this.state.activity !== prevState.activity) {
       this.loadStreams();
-    } else if (this.state.view !== prevState.view) {
+    } else if (this.state.view !== prevState.view || this.state.lap !== prevState.lap) {
       this.updateAll();
     } 
   }
@@ -224,7 +225,19 @@ class Map extends React.Component {
       //console.log(`Expected one ${type} stream`);
       return null;
     }
-    return result[0];
+    var stream = result[0];
+    // Limit to individual lap if set
+    if (this.state.lap) {
+      if (!stream.originalData) {
+        stream.originalData = stream.data;
+      }
+      stream.data = stream.originalData.slice(this.state.lap.start_index, this.state.lap.end_index);
+    } else {
+      if (stream.originalData) {
+        stream.data = stream.originalData;
+      }
+    }
+    return stream;
   }
 
   fitBounds() {
@@ -845,7 +858,8 @@ class Map extends React.Component {
 
 
 Map.propTypes = {
-  activity: PropTypes.object
+  activity: PropTypes.object,
+  lap: PropTypes.object
 };
 
 export default Map;

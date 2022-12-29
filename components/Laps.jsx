@@ -37,7 +37,7 @@ class Laps extends React.Component {
       laps = this.state.laps.map((l,i) => {
         const strPace = this.pace(l.distance,l.moving_time);
         return (
-        <tr key={i} className="detail">
+        <tr key={i} className={this.props.currentLap && l.id === this.props.currentLap.id ? "detail selectedLap" : "detail"} onClick={() => this.props.selectLap(l)} >
           <td><span>{l.name}</span></td>
           <td><span className='duration'>{duration(l.elapsed_time)}</span></td>
           <td><span className='distance'>{milesOrMetres(l.distance)}</span></td>
@@ -141,7 +141,9 @@ class Laps extends React.Component {
 
 
 Laps.propTypes = {
-  activity: PropTypes.object
+  activity: PropTypes.object,
+  selectLap: PropTypes.func.isRequired,
+  currentLap: PropTypes.object
 };
 
 export default Laps;

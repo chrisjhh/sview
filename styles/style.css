@@ -24,6 +24,10 @@
   height: 20px;
 }
 
+.selectedLap {
+  background-color: aliceblue;
+}
+
 .activity:hover {
   background-color: aliceblue;
 }
