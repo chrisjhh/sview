@@ -244,8 +244,8 @@ export class Database {
     return this.qi.query(
       `INSERT INTO runs (name, start_time, distance, duration, elevation,
         start_latlng, end_latlng, is_race, average_heartrate,
-        max_heartrate, average_cadence, strava_id, moving_time)
-        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+        max_heartrate, average_cadence, strava_id, moving_time, runtype)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
         RETURNING id`,
       [data.name, data.start_date_local, data.distance, data.elapsed_time,
         data.total_elevation_gain, point(data.start_latlng),
@@ -253,7 +253,7 @@ export class Database {
         isRace,
         data.has_heartrate ? data.average_heartrate : null,
         data.has_heartrate ? data.max_heartrate : null,
-        data.average_cadence, data.id, data.moving_time]
+        data.average_cadence, data.id, data.moving_time, data.type]
     )
       .then((res: QueryResult<{id: DBRunData["id"]}>) => {
         if (res.rowCount === 1) {
@@ -356,7 +356,7 @@ export class Database {
    */
   public async updateRunData(runs: StravaRunData[]) {
     for (const run of runs) {
-      if (run.type !== 'Run') {
+      if (run.type !== 'Run' && run.type !== 'VirtualRun') {
         continue;
       }
       try {
@@ -385,34 +385,36 @@ export class Database {
       if (updated == null) {
         // Does not exist in database, so add it
         const id = await this.addRun(data);
-        // Find the route
-        let route_id = await this.findRoute(data);
-        if (route_id == null) {
-          // Create a new route for this run
-          route_id = await this.createRoute(data);
-        }
-        if (route_id != null) {
-          // Set the route id for this run
-          await this.qi.query(
-            'UPDATE runs SET route_id = $1 WHERE id = $2',
-            [route_id, id]
-          );
-          // Update the route with new average distance and elevation
-          await this.qi.query(
-            `UPDATE
-              routes
-            SET
-              (distance, elevation) =
-              (SELECT
-                avg(distance), avg(elevation)
-              FROM
-                runs
-              WHERE
-                route_id = $1
-              )
-            WHERE id = $1`,
-            [route_id]
-          );
+        if (data.type === 'Run') {
+          // Find the route
+          let route_id = await this.findRoute(data);
+          if (route_id == null) {
+            // Create a new route for this run
+            route_id = await this.createRoute(data);
+          }
+          if (route_id != null) {
+            // Set the route id for this run
+            await this.qi.query(
+              'UPDATE runs SET route_id = $1 WHERE id = $2',
+              [route_id, id]
+            );
+            // Update the route with new average distance and elevation
+            await this.qi.query(
+              `UPDATE
+                routes
+              SET
+                (distance, elevation) =
+                (SELECT
+                  avg(distance), avg(elevation)
+                FROM
+                  runs
+                WHERE
+                  route_id = $1
+                )
+              WHERE id = $1`,
+              [route_id]
+            );
+          }
         }
       }
     } catch (err) {
@@ -733,7 +735,7 @@ export class Database {
       await this._execSQL('runs.sql');
       await this._execSQL('weather.sql');
       await this._execSQL('manualhr.sql');
-      await this.setProperty('version', '1.3');
+      await this.setProperty('version', '1.4');
     } catch (err) {
       await this.abortTransaction();
       throw err;
@@ -866,8 +868,13 @@ export class Database {
       case '1.2':
         await this._execSQL('manualhr.sql');
         await this.setProperty('version', '1.3');
+        console.log('Updated running database to version 1.3');
         // deliberate fall through
       case '1.3':
+        await this._execSQL('add_runtype.sql');
+        await this.setProperty('version', '1.4');
+        console.log('Updated running database to version 1.4');
+      case '1.4':
         // This is the current version
         // Everything is OK
         break;
@@ -899,7 +906,7 @@ export class Database {
 export const row_to_strava_run = function(row: DBRunData) {
   const data = {
     id : Number(row.strava_id),
-    type : "Run" as "Run",
+    type : row.runtype,
     name : row.name,
     workout_type : row.is_race ? 1 : null,
     elapsed_time : row.duration,

@@ -5,7 +5,7 @@ import SocialDetails from './SocialDetails';
 import { dateFormat } from '../lib/duration';
 
 const Activity = props => (
-  <div className={'activity ' + props.activity.type.toLowerCase()} onClick={() => props.selectActivity(props.activity)}>
+  <div className={'activity ' + (props.activity.type ? props.activity.type.toLowerCase() : '')} onClick={() => props.selectActivity(props.activity)}>
     <div className={props.activity.workout_type === 1 ? 'type race' : 'type'}></div>
     <div className="contents">
       <div className="row1">

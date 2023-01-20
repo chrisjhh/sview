@@ -1,6 +1,6 @@
 export type StravaRunData = BaseRunData & HRdata;
 
-type activityType = ("AlpineSki" |
+export type activityType = ("AlpineSki" |
   "BackcountrySki" |
   "Canoeing" |
   "Crossfit" |

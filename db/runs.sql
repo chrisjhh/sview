@@ -19,6 +19,7 @@ CREATE TABLE public.runs
     route_id integer,
     strava_id bigint,
     moving_time real,
+    runtype character varying(255) COLLATE pg_catalog."default",
     CONSTRAINT runs_pkey PRIMARY KEY (id),
     CONSTRAINT run_unique_start_time UNIQUE (start_time),
     CONSTRAINT run_unique_strava_id UNIQUE (strava_id),

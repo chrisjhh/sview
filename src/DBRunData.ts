@@ -1,3 +1,5 @@
+import { activityType } from "./StravaRunData"
+
 export type DBRunData = {
   id: number,
   name: string,
@@ -12,7 +14,8 @@ export type DBRunData = {
   max_heartrate: number,
   average_cadence: number,
   strava_id: number,
-  moving_time: number
+  moving_time: number,
+  runtype: activityType
 };
 
 type point = {
