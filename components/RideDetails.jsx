@@ -6,6 +6,7 @@ import XPoints from './XPoints';
 import Cadence from './Cadence';
 import TrainingLoad from './TrainingLoad';
 import Power from './Power';
+import Elevation from './Elevation';
 
 const miles = function(distance) {
   let mi = Number(distance) / 1609.34;
@@ -38,6 +39,7 @@ const RideDetails = props => (
     <span className='speed'>{speed(props.activity)}
       <span className="units">mph</span>
     </span>
+    <Elevation activity={props.activity}/>
     <HeartRate  activity={props.activity}/>
     <Cadence activity={props.activity}/>
     <TrainingLoad activity={props.activity}/>
