@@ -127,7 +127,7 @@ class Laps extends React.Component {
 
   loadLaps() {
     const self = this;
-    if (!this.state.loaded && !this.loading) {
+    if (!this.state.loaded && !this.loading && this.props.activity) {
       this.loading = true;
       getLaps(this.props.activity.id)
         .then(data => self.setState({
