@@ -11,6 +11,7 @@ services:
       - pgdb
     networks:
       - internal
+    restart: unless-stopped
 
 
   pgdb:
@@ -23,6 +24,7 @@ services:
       internal:
         aliases:
           - postgres
+    restart: unless-stopped
   
 volumes:
   pgdata:
