@@ -18,7 +18,7 @@ let defaultStats = null;
 // Check if we are running on local server with its own cache
 if (location.port && !isNaN(Number(location.port)) && 
     Number(location.port) !== 80) {
-  useLocal(location.port);
+  useLocal(location.port, location.hostname);
   testing = false;
 }
 

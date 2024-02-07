@@ -221,9 +221,9 @@ const defaultHttpOptions = {
 };
 const api = '/api/v3';
 
-export const useLocal = function(port: number) {
+export const useLocal = function(port: number, host: string = 'localhost') {
   request = requestHttp;
-  defaultHttpOptions.hostname = 'localhost';
+  defaultHttpOptions.hostname = host;
   defaultHttpOptions.port = port;
   defaultHttpOptions.headers = {};
 };
