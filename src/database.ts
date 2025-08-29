@@ -57,6 +57,9 @@ export class Database {
         return true;
       })
       .catch(() => false);
+    client.on('error', (err) => {
+      console.error('Database error', err.message, err.stack);
+    });
   }
 
   /**
