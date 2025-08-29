@@ -1,4 +1,4 @@
-FROM node:8
+FROM node:latest
 
 # Create app directory
 WORKDIR /usr/src/app
@@ -6,7 +6,7 @@ WORKDIR /usr/src/app
 # Install app dependencies
 COPY package*.json ./
 #COPY .npmrc ./
-RUN npm install
+RUN npm install --verbose
 
 # Bundle app source
 # Excludes stuff in .dockerignore
@@ -18,6 +18,7 @@ VOLUME [ "/usr/src/app/server/cache" ]
 EXPOSE 7676
 
 CMD [ "npm", "start" ]
+#CMD [ "bash", "-c", "npm install --verbose" ]
 # > docker build -t sview .
 # > docker run -p 7676:7676 sview
 # or

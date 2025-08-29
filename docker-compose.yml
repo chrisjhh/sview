@@ -1,4 +1,3 @@
-version: '3'
 
 services:
   sview:
@@ -9,26 +8,32 @@ services:
       - svcache:/usr/src/app/server/cache
     depends_on:
       - pgdb
-    networks:
-      - internal
+    #networks:
+    #  - internal
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    links:
+      - "pgdb:postgres" 
     restart: unless-stopped
 
 
   pgdb:
     image: postgres
     environment:
+      POSTRGES_PASSWORD: postgres
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - pgdata:/var/lib/postgresql/data
-    networks:
-      internal:
-        aliases:
-          - postgres
+    #networks:
+    #  internal:
+    #    aliases:
+    #      - postgres
     restart: unless-stopped
   
 volumes:
   pgdata:
   svcache:
 
-networks:
-  internal:
+#networks:
+#  internal:
